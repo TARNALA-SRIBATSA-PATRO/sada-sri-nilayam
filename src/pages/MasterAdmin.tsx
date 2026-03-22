@@ -122,11 +122,10 @@ const MasterAdmin = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter full name"
-                className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground transition-all duration-200 focus:outline-none focus:ring-2"
+                className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-secondary"
                 style={{
                   background: "hsl(var(--ivory-warm))",
                   border: "1px solid hsl(var(--border))",
-                  focusRingColor: "hsl(var(--gold))",
                 }}
               />
             </div>
