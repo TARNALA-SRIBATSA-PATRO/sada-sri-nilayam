@@ -10,6 +10,7 @@ import ContactSection from "@/components/ContactSection";
 import InvitationFooter from "@/components/InvitationFooter";
 import MusicToggle from "@/components/MusicToggle";
 import CalendarModal from "@/components/CalendarModal";
+import SecurityDetails from "@/components/SecurityDetails";
 
 const InvitationPage = () => {
   const { id } = useParams();
