@@ -35,7 +35,18 @@ const CountdownTimer = () => {
     return () => clearInterval(interval);
   }, []);
 
-  if (expired || !timeLeft) return null;
+  if (expired) return null;
+  if (!timeLeft) {
+    return (
+      <section className="py-20 md:py-28 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-display text-2xl sm:text-3xl font-semibold mb-2 text-primary">
+            The Auspicious Day Awaits
+          </h2>
+        </div>
+      </section>
+    );
+  }
 
   const units = [
     { label: "Days", value: timeLeft.days },
