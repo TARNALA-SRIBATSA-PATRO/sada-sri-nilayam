@@ -35,6 +35,7 @@ const InvitationPage = () => {
       <VenueSection />
       <PhotoGallery />
       <FamilyMessage />
+      <SecurityDetails guestName={guestName} />
       <ContactSection userName={guestName} />
       <InvitationFooter />
       <MusicToggle />
