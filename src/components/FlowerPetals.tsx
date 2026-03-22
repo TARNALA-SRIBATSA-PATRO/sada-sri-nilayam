@@ -23,7 +23,7 @@ const PETAL_COLORS = [
 const FlowerPetals = ({ active }: { active: boolean }) => {
   const [petals, setPetals] = useState<Petal[]>([]);
   const [opacity, setOpacity] = useState(1);
-  const intervalRef = useRef<NodeJS.Timer | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (!active) {
