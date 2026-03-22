@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import InvitationPage from "./pages/InvitationPage";
+import MasterAdmin from "./pages/MasterAdmin";
+import SecondaryAdmin from "./pages/SecondaryAdmin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
