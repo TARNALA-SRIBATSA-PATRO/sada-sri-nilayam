@@ -10,6 +10,7 @@ import ContactSection from "@/components/ContactSection";
 import InvitationFooter from "@/components/InvitationFooter";
 import MusicToggle from "@/components/MusicToggle";
 import CalendarModal from "@/components/CalendarModal";
+import SecurityDetails from "@/components/SecurityDetails";
 
 const InvitationPage = () => {
   const { id } = useParams();
@@ -34,6 +35,7 @@ const InvitationPage = () => {
       <VenueSection />
       <PhotoGallery />
       <FamilyMessage />
+      <SecurityDetails guestName={guestName} />
       <ContactSection userName={guestName} />
       <InvitationFooter />
       <MusicToggle />

@@ -116,8 +116,14 @@ export default {
           "50%": { transform: "translateY(-8px)" },
         },
         "petal-fall": {
-          "0%": { transform: "translateY(-10%) rotate(0deg)", opacity: "1" },
-          "100%": { transform: "translateY(100vh) rotate(720deg)", opacity: "0.3" },
+          "0%": { transform: "translateY(-20px) rotate(0deg)", opacity: "0.9" },
+          "50%": { opacity: "0.8" },
+          "100%": { transform: "translateY(90vh) rotate(540deg)", opacity: "0" },
+        },
+        "petal-sway": {
+          "0%, 100%": { marginLeft: "0px" },
+          "25%": { marginLeft: "30px" },
+          "75%": { marginLeft: "-30px" },
         },
         "shimmer": {
           "0%": { backgroundPosition: "-200% 0" },

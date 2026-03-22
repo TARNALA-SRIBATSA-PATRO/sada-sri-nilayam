@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import ganeshaImg from "@/assets/ganesha.png";
 import CurtainAnimation from "./CurtainAnimation";
 import FlowerPetals from "./FlowerPetals";
@@ -11,21 +11,18 @@ const HeroSection = () => {
     setCurtainDone(true);
   }, []);
 
-  // Track scroll to fade petals
-  useState(() => {
+  useEffect(() => {
     const onScroll = () => {
       setScrolled(window.scrollY > 200);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  });
+  }, []);
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-      {/* Curtain */}
       {!curtainDone && <CurtainAnimation onComplete={handleCurtainComplete} />}
 
-      {/* Background */}
       <div
         className="absolute inset-0"
         style={{
@@ -33,19 +30,16 @@ const HeroSection = () => {
         }}
       />
 
-      {/* Subtle pattern overlay */}
       <div
         className="absolute inset-0 opacity-[0.04]"
         style={{
-          backgroundImage: `repeating-conic-gradient(hsl(345, 70%, 28%) 0% 25%, transparent 0% 50%)`,
+          backgroundImage: `repeating-conic-gradient(hsl(var(--primary)) 0% 25%, transparent 0% 50%)`,
           backgroundSize: "20px 20px",
         }}
       />
 
-      {/* Flower petals */}
       <FlowerPetals active={curtainDone && !scrolled} />
 
-      {/* Ganesha image */}
       <div
         className="relative z-20 flex flex-col items-center"
         style={{
@@ -54,7 +48,6 @@ const HeroSection = () => {
           transition: "opacity 1s ease-out 0.3s, transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s",
         }}
       >
-        {/* Glow behind Ganesha */}
         <div
           className="absolute inset-0 -m-12 rounded-full animate-glow-pulse"
           style={{
@@ -71,7 +64,6 @@ const HeroSection = () => {
           }}
         />
 
-        {/* Om text */}
         <p
           className="text-script text-gold mt-4 text-2xl sm:text-3xl"
           style={{
@@ -82,11 +74,9 @@ const HeroSection = () => {
           Shree Ganeshaya Namaha
         </p>
 
-        {/* House Name */}
         <h1
-          className="text-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mt-6 tracking-wide text-center"
+          className="text-display text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mt-6 tracking-wide text-center text-primary"
           style={{
-            color: "hsl(345, 70%, 28%)",
             opacity: curtainDone ? 1 : 0,
             transform: curtainDone ? "translateY(0)" : "translateY(15px)",
             transition: "opacity 0.8s ease-out 1.3s, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 1.3s",
@@ -115,7 +105,6 @@ const HeroSection = () => {
         </p>
       </div>
 
-      {/* Scroll indicator */}
       <div
         className="absolute bottom-8 z-20 animate-float"
         style={{
@@ -123,9 +112,9 @@ const HeroSection = () => {
           transition: "opacity 1s ease-out 2.5s",
         }}
       >
-        <svg width="24" height="36" viewBox="0 0 24 36" fill="none" stroke="hsl(345, 70%, 28%)" strokeWidth="1.5">
+        <svg width="24" height="36" viewBox="0 0 24 36" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5">
           <rect x="1" y="1" width="22" height="34" rx="11" />
-          <circle cx="12" cy="10" r="2" fill="hsl(345, 70%, 28%)">
+          <circle cx="12" cy="10" r="2" fill="hsl(var(--primary))">
             <animate attributeName="cy" values="10;22;10" dur="2s" repeatCount="indefinite" />
           </circle>
         </svg>
