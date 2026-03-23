@@ -25,6 +25,7 @@ const SecondaryAdmin = () => {
     if (id) {
       const a = getAdminById(id);
       setAdmin(a ? { id: a.id, name: a.name } : { id, name: "Admin" });
+      recordAdminAccess(id);
     }
     setInvitations(getInvitations());
   }, [id]);

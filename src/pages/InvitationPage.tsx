@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { recordInvitationOpen } from "@/lib/invitations";
 import HeroSection from "@/components/HeroSection";
 import WelcomeSection from "@/components/WelcomeSection";
 import CountdownTimer from "@/components/CountdownTimer";
