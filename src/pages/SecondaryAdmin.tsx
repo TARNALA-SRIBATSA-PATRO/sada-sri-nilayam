@@ -46,12 +46,10 @@ const SecondaryAdmin = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewName, setPreviewName] = useState("");
 
-  // Edit/Delete state
   const [editInv, setEditInv] = useState<Invitation | null>(null);
   const [editForm, setEditForm] = useState({ personName: "", nickname: "", email: "", withFamily: false, customMessage: "" });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
-  // Search & Sort
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "lastOpened" | "byAdmin">("newest");
   const [filterAdmin, setFilterAdmin] = useState("");
@@ -145,7 +143,6 @@ const SecondaryAdmin = () => {
 
   return (
     <div className="min-h-screen" style={{ background: "hsl(var(--background))" }}>
-      {/* Header */}
       <header className="sticky top-0 z-40 px-6 py-4" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--maroon-deep)))", boxShadow: "0 4px 24px hsla(345, 70%, 28%, 0.3)" }}>
         <div className="max-w-5xl mx-auto">
           <h1 className="text-display text-lg sm:text-xl font-bold" style={{ color: "hsl(var(--gold))" }}>
@@ -230,7 +227,6 @@ const SecondaryAdmin = () => {
             </div>
           </div>
 
-          {/* Search & Sort */}
           <div className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="flex-1">
               <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, nickname, or admin..." className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary text-sm" style={inputStyle} />
@@ -274,7 +270,7 @@ const SecondaryAdmin = () => {
                       </div>
                       {inv.customMessage && (
                         <div className="mt-2 px-3 py-2 rounded-lg text-xs text-body-serif" style={{ background: "hsla(345, 40%, 40%, 0.05)", border: "1px solid hsla(345, 40%, 40%, 0.1)", color: "hsl(var(--foreground))" }}>
-                          <span className="font-semibold text-display" style={{ color: "hsl(var(--primary))" }}>A Heartfelt Note: </span>
+                          <span className="font-semibold text-display" style={{ color: "hsl(var(--primary))" }}>Note: </span>
                           {inv.customMessage}
                         </div>
                       )}
