@@ -110,6 +110,15 @@ export function addAdmin(name: string, email: string = ""): AdminUser {
   return newAdmin;
 }
 
+export function updateAdmin(id: string, updates: Partial<Omit<AdminUser, "id" | "createdAt">>): AdminUser | null {
+  const admins = getAdmins();
+  const index = admins.findIndex((a) => a.id === id);
+  if (index === -1) return null;
+  admins[index] = { ...admins[index], ...updates };
+  localStorage.setItem(ADMINS_KEY, JSON.stringify(admins));
+  return admins[index];
+}
+
 export function deleteAdmin(id: string): boolean {
   const admins = getAdmins();
   const filtered = admins.filter((a) => a.id !== id);
