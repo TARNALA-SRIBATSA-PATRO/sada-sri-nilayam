@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import useScrollReveal from "@/hooks/useScrollReveal";
-
-const EVENT_DATE = new Date("2026-04-20T08:30:00+05:30");
+import { getEventDate } from "@/lib/invitations";
 
 interface TimeLeft {
   days: number;
@@ -14,11 +13,16 @@ const CountdownTimer = () => {
   const { ref, visible } = useScrollReveal();
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [expired, setExpired] = useState(false);
+  const [eventDate, setEventDateState] = useState<Date>(getEventDate());
+
+  useEffect(() => {
+    setEventDateState(getEventDate());
+  }, []);
 
   useEffect(() => {
     const calc = () => {
       const now = new Date().getTime();
-      const diff = EVENT_DATE.getTime() - now;
+      const diff = eventDate.getTime() - now;
       if (diff <= 0) {
         setExpired(true);
         return;
@@ -33,7 +37,19 @@ const CountdownTimer = () => {
     calc();
     const interval = setInterval(calc, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [eventDate]);
+
+  const formatEventDate = () => {
+    return eventDate.toLocaleDateString("en-IN", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }) + " at " + eventDate.toLocaleTimeString("en-IN", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   if (expired) return null;
   if (!timeLeft) {
@@ -76,7 +92,7 @@ const CountdownTimer = () => {
             transition: "opacity 0.7s ease-out 0.2s",
           }}
         >
-          April 20, 2026 at 8:30 AM
+          {formatEventDate()}
         </p>
 
         <div className="flex justify-center gap-4 sm:gap-6">

@@ -12,11 +12,13 @@ export interface Invitation {
 
 const STORAGE_KEY = "sada_sri_invitations";
 const ADMINS_KEY = "sada_sri_admins";
+const EVENT_DATE_KEY = "sada_sri_event_date";
 
 export interface AdminUser {
   id: string;
   name: string;
   email: string;
+  phone: string;
   createdAt: string;
   lastAccessedAt: string | null;
 }
@@ -29,7 +31,6 @@ export function getInvitations(): Invitation[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     const invitations = data ? JSON.parse(data) : [];
-    // Migrate old invitations without lastOpenedAt
     return invitations.map((inv: Invitation) => ({
       ...inv,
       lastOpenedAt: inv.lastOpenedAt ?? null,
@@ -37,6 +38,13 @@ export function getInvitations(): Invitation[] {
   } catch {
     return [];
   }
+}
+
+export function getInvitationBySlug(slug: string): Invitation | undefined {
+  const s = slug.toLowerCase().replace(/\s+/g, "-");
+  return getInvitations().find(
+    (inv) => inv.personName.toLowerCase().replace(/\s+/g, "-") === s
+  );
 }
 
 export function addInvitation(inv: Omit<Invitation, "id" | "createdAt" | "lastOpenedAt">): Invitation {
@@ -89,6 +97,7 @@ export function getAdmins(): AdminUser[] {
     return admins.map((a: AdminUser) => ({
       ...a,
       email: a.email ?? "",
+      phone: a.phone ?? "",
       lastAccessedAt: a.lastAccessedAt ?? null,
     }));
   } catch {
@@ -96,12 +105,13 @@ export function getAdmins(): AdminUser[] {
   }
 }
 
-export function addAdmin(name: string, email: string = ""): AdminUser {
+export function addAdmin(name: string, email: string = "", phone: string = ""): AdminUser {
   const admins = getAdmins();
   const newAdmin: AdminUser = {
     id: generateId(),
     name,
     email,
+    phone,
     createdAt: new Date().toISOString(),
     lastAccessedAt: null,
   };
@@ -146,4 +156,17 @@ export function getInviteUrl(name: string): string {
 
 export function getSecondaryAdminUrl(adminId: string): string {
   return `${window.location.origin}/admin/user/${adminId}`;
+}
+
+// Event date config
+export function getEventDate(): Date {
+  try {
+    const stored = localStorage.getItem(EVENT_DATE_KEY);
+    if (stored) return new Date(stored);
+  } catch {}
+  return new Date("2026-04-20T08:30:00+05:30");
+}
+
+export function setEventDate(date: Date): void {
+  localStorage.setItem(EVENT_DATE_KEY, date.toISOString());
 }

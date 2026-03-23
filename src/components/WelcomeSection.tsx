@@ -2,9 +2,11 @@ import useScrollReveal from "@/hooks/useScrollReveal";
 
 interface WelcomeSectionProps {
   userName?: string;
+  withFamily?: boolean;
+  customMessage?: string;
 }
 
-const WelcomeSection = ({ userName = "Dear Guest" }: WelcomeSectionProps) => {
+const WelcomeSection = ({ userName = "Dear Guest", withFamily = false, customMessage }: WelcomeSectionProps) => {
   const { ref, visible } = useScrollReveal();
 
   return (
@@ -40,9 +42,42 @@ const WelcomeSection = ({ userName = "Dear Guest" }: WelcomeSectionProps) => {
           warmly invites you,{" "}
           <span className="text-script text-3xl sm:text-4xl gold-text">
             {userName}
+            {withFamily && (
+              <span className="text-script text-2xl sm:text-3xl"> with family</span>
+            )}
           </span>
           , to celebrate the beginning of our new journey together.
         </p>
+
+        {customMessage && (
+          <div
+            className="mt-8 mx-auto max-w-xl"
+            style={{
+              opacity: visible ? 1 : 0,
+              transform: visible ? "translateY(0)" : "translateY(15px)",
+              transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s",
+            }}
+          >
+            <div
+              className="card-ornate p-6 text-center"
+              style={{
+                background: "hsla(43, 85%, 52%, 0.05)",
+                borderColor: "hsla(43, 85%, 52%, 0.25)",
+              }}
+            >
+              <p
+                className="text-display text-sm font-semibold uppercase tracking-wider mb-2"
+                style={{ color: "hsl(345, 70%, 28%)" }}
+              >
+                A Special Word for You
+              </p>
+              <p className="text-body-serif text-base sm:text-lg leading-relaxed text-foreground italic">
+                "{customMessage}"
+              </p>
+            </div>
+          </div>
+        )}
+
         <div
           className="section-divider mt-8"
           style={{

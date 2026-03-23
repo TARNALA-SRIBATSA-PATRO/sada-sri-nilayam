@@ -1,7 +1,8 @@
 import { useState } from "react";
 import useScrollReveal from "@/hooks/useScrollReveal";
+import type { AdminUser } from "@/lib/invitations";
 
-const CONTACTS = [
+const DEFAULT_CONTACTS = [
   { name: "Deenabandhu", phone: "9999999999" },
   { name: "Sabita", phone: "9999999999" },
   { name: "Bikrant", phone: "9999999999" },
@@ -13,16 +14,20 @@ const CONTACTS = [
 
 interface ContactSectionProps {
   userName?: string;
+  adminContacts?: AdminUser[];
 }
 
-const ContactSection = ({ userName = "" }: ContactSectionProps) => {
+const ContactSection = ({ userName = "", adminContacts = [] }: ContactSectionProps) => {
   const { ref, visible } = useScrollReveal();
   const [form, setForm] = useState({ name: userName, nickname: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
 
+  const contacts = adminContacts.length > 0
+    ? adminContacts.map((a) => ({ name: a.name, phone: a.phone }))
+    : DEFAULT_CONTACTS;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send to backend/email
     console.log("Form submitted:", form);
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
@@ -132,8 +137,8 @@ const ContactSection = ({ userName = "" }: ContactSectionProps) => {
               Call Us Directly
             </h3>
             <div className="space-y-3">
-              {CONTACTS.map((c) => (
-                <div key={c.name} className="card-ornate p-4 flex items-center justify-between">
+              {contacts.map((c) => (
+                <div key={c.name + c.phone} className="card-ornate p-4 flex items-center justify-between">
                   <span className="text-body-serif text-lg text-foreground">{c.name}</span>
                   <div className="flex gap-2">
                     <a

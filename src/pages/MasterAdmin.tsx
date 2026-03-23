@@ -10,6 +10,8 @@ import {
   getAdmins,
   getInviteUrl,
   getSecondaryAdminUrl,
+  getEventDate,
+  setEventDate,
   type Invitation,
   type AdminUser,
 } from "@/lib/invitations";
@@ -41,30 +43,39 @@ const MasterAdmin = () => {
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [generatedLinks, setGeneratedLinks] = useState<{ invite: string; admin: string } | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<{ type: "invitation" | "admin"; id: string; name: string } | null>(null);
 
-  // Edit invitation
   const [editInv, setEditInv] = useState<Invitation | null>(null);
   const [editForm, setEditForm] = useState({ personName: "", nickname: "", email: "", withFamily: false, customMessage: "" });
 
-  // Edit admin
   const [editAdmin, setEditAdmin] = useState<AdminUser | null>(null);
-  const [editAdminForm, setEditAdminForm] = useState({ name: "", email: "" });
+  const [editAdminForm, setEditAdminForm] = useState({ name: "", email: "", phone: "" });
 
-  // Search & sort
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "lastOpened" | "byAdmin">("newest");
   const [filterAdmin, setFilterAdmin] = useState("");
+
+  // Event date config
+  const [eventDateStr, setEventDateStr] = useState("");
+  const [eventTimeStr, setEventTimeStr] = useState("");
+  const [dateSaved, setDateSaved] = useState(false);
 
   const reload = () => {
     setInvitations(getInvitations());
     setAdmins(getAdmins());
   };
 
-  useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    reload();
+    const d = getEventDate();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    setEventDateStr(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
+    setEventTimeStr(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+  }, []);
 
   const adminNames = useMemo(() => {
     const names = new Set(invitations.map((i) => i.sentBy));
@@ -100,11 +111,11 @@ const MasterAdmin = () => {
 
   const handleCreate = () => {
     if (!name.trim()) return;
-    const admin = addAdmin(name.trim(), email.trim());
+    const admin = addAdmin(name.trim(), email.trim(), phone.trim());
     addInvitation({ personName: name.trim(), nickname: "", email: email.trim(), sentBy: "Master Admin", withFamily: false, customMessage: "" });
     reload();
     setGeneratedLinks({ invite: getInviteUrl(name.trim()), admin: getSecondaryAdminUrl(admin.id) });
-    setName(""); setEmail("");
+    setName(""); setEmail(""); setPhone("");
   };
 
   const copyLink = (link: string, label: string) => {
@@ -140,7 +151,7 @@ const MasterAdmin = () => {
 
   const openEditAdmin = (admin: AdminUser) => {
     setEditAdmin(admin);
-    setEditAdminForm({ name: admin.name, email: admin.email });
+    setEditAdminForm({ name: admin.name, email: admin.email, phone: admin.phone });
   };
 
   const saveEditAdmin = () => {
@@ -150,9 +161,17 @@ const MasterAdmin = () => {
     reload();
   };
 
+  const saveEventDate = () => {
+    if (eventDateStr && eventTimeStr) {
+      const d = new Date(`${eventDateStr}T${eventTimeStr}:00`);
+      setEventDate(d);
+      setDateSaved(true);
+      setTimeout(() => setDateSaved(false), 2000);
+    }
+  };
+
   return (
     <div className="min-h-screen" style={{ background: "hsl(var(--background))" }}>
-      {/* Header */}
       <header className="sticky top-0 z-40 px-6 py-4" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--maroon-deep)))", boxShadow: "0 4px 24px hsla(345, 70%, 28%, 0.3)" }}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
@@ -180,13 +199,35 @@ const MasterAdmin = () => {
           ))}
         </section>
 
+        {/* Event Date Config */}
+        <section className="card-ornate p-6 sm:p-8">
+          <h2 className="text-display text-lg sm:text-xl font-semibold mb-4" style={{ color: "hsl(var(--primary))" }}>Event Date & Time</h2>
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1">
+              <label className="text-body-serif text-sm text-muted-foreground block mb-1.5">Date</label>
+              <input type="date" value={eventDateStr} onChange={(e) => setEventDateStr(e.target.value)} className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary" style={inputStyle} />
+            </div>
+            <div className="flex-1">
+              <label className="text-body-serif text-sm text-muted-foreground block mb-1.5">Time</label>
+              <input type="time" value={eventTimeStr} onChange={(e) => setEventTimeStr(e.target.value)} className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary" style={inputStyle} />
+            </div>
+            <button onClick={saveEventDate} className="px-6 py-2.5 rounded-lg text-display font-semibold text-sm transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] shrink-0" style={{ background: dateSaved ? "hsl(140, 50%, 40%)" : "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--maroon-deep)))", color: "hsl(var(--primary-foreground))", boxShadow: "0 4px 16px hsla(345, 70%, 28%, 0.25)" }}>
+              {dateSaved ? "Saved" : "Update Date"}
+            </button>
+          </div>
+        </section>
+
         {/* Create Invitation */}
         <section className="card-ornate p-6 sm:p-8">
-          <h2 className="text-display text-lg sm:text-xl font-semibold mb-6" style={{ color: "hsl(var(--primary))" }}>Create Invitation</h2>
-          <div className="grid sm:grid-cols-2 gap-4 mb-6">
+          <h2 className="text-display text-lg sm:text-xl font-semibold mb-6" style={{ color: "hsl(var(--primary))" }}>Create Admin & Invitation</h2>
+          <div className="grid sm:grid-cols-3 gap-4 mb-6">
             <div>
-              <label className="text-body-serif text-sm text-muted-foreground block mb-1.5">Person Name</label>
+              <label className="text-body-serif text-sm text-muted-foreground block mb-1.5">Name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter full name" className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary" style={inputStyle} />
+            </div>
+            <div>
+              <label className="text-body-serif text-sm text-muted-foreground block mb-1.5">Phone Number</label>
+              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Enter phone number" className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary" style={inputStyle} />
             </div>
             <div>
               <label className="text-body-serif text-sm text-muted-foreground block mb-1.5">Email (optional)</label>
@@ -232,10 +273,10 @@ const MasterAdmin = () => {
             <p className="text-body-serif text-muted-foreground text-center py-8">No admins created yet.</p>
           ) : (
             <div className="overflow-x-auto -mx-2">
-              <table className="w-full text-left min-w-[600px]">
+              <table className="w-full text-left min-w-[650px]">
                 <thead>
                   <tr style={{ borderBottom: "2px solid hsla(43, 85%, 52%, 0.3)" }}>
-                    {["Name", "Email", "Admin URL", "Last Accessed", "Actions"].map((h) => (
+                    {["Name", "Phone", "Email", "Admin URL", "Last Accessed", "Actions"].map((h) => (
                       <th key={h} className="text-body-serif text-xs uppercase tracking-wider text-muted-foreground pb-3 px-2">{h}</th>
                     ))}
                   </tr>
@@ -244,6 +285,7 @@ const MasterAdmin = () => {
                   {admins.map((admin, i) => (
                     <tr key={admin.id} className="transition-colors duration-150" style={{ borderBottom: "1px solid hsl(var(--border))", background: i % 2 === 0 ? "transparent" : "hsla(40, 33%, 96%, 0.5)" }}>
                       <td className="text-body-serif text-sm py-3 px-2 font-medium text-foreground">{admin.name}</td>
+                      <td className="text-body-serif text-sm py-3 px-2 text-muted-foreground">{admin.phone || "—"}</td>
                       <td className="text-body-serif text-sm py-3 px-2 text-muted-foreground">{admin.email || "—"}</td>
                       <td className="text-body-serif text-sm py-3 px-2">
                         <div className="flex items-center gap-2">
@@ -277,7 +319,6 @@ const MasterAdmin = () => {
             </div>
           </div>
 
-          {/* Search & Sort Bar */}
           <div className="flex flex-col sm:flex-row gap-3 mb-5">
             <div className="flex-1">
               <input
@@ -341,7 +382,7 @@ const MasterAdmin = () => {
                           <span className="text-xs text-muted-foreground text-body-serif">({inv.nickname})</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground text-body-serif">
+                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground text-body-serif flex-wrap">
                         <span>Sent by {inv.sentBy}</span>
                         <span>Created {formatDate(inv.createdAt)}</span>
                         <span style={{ color: inv.lastOpenedAt ? "hsl(140, 60%, 35%)" : undefined }}>
@@ -350,7 +391,7 @@ const MasterAdmin = () => {
                       </div>
                       {inv.customMessage && (
                         <div className="mt-2 px-3 py-2 rounded-lg text-xs text-body-serif" style={{ background: "hsla(345, 40%, 40%, 0.05)", border: "1px solid hsla(345, 40%, 40%, 0.1)", color: "hsl(var(--foreground))" }}>
-                          <span className="font-semibold text-display" style={{ color: "hsl(var(--primary))" }}>A Heartfelt Note: </span>
+                          <span className="font-semibold text-display" style={{ color: "hsl(var(--primary))" }}>Note: </span>
                           {inv.customMessage}
                         </div>
                       )}
@@ -430,6 +471,10 @@ const MasterAdmin = () => {
             <div>
               <label className="text-body-serif text-sm text-muted-foreground block mb-1">Name</label>
               <input type="text" value={editAdminForm.name} onChange={(e) => setEditAdminForm({ ...editAdminForm, name: e.target.value })} className="w-full px-3 py-2 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary" style={inputStyle} />
+            </div>
+            <div>
+              <label className="text-body-serif text-sm text-muted-foreground block mb-1">Phone Number</label>
+              <input type="tel" value={editAdminForm.phone} onChange={(e) => setEditAdminForm({ ...editAdminForm, phone: e.target.value })} className="w-full px-3 py-2 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary" style={inputStyle} />
             </div>
             <div>
               <label className="text-body-serif text-sm text-muted-foreground block mb-1">Email</label>
