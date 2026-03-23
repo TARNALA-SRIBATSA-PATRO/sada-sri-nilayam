@@ -5,6 +5,7 @@ import {
   addInvitation,
   getAdminById,
   getInviteUrl,
+  recordAdminAccess,
   type Invitation,
 } from "@/lib/invitations";
 
