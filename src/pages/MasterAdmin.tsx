@@ -205,11 +205,19 @@ const MasterAdmin = () => {
               ].map(({ label, link, key }) => (
                 <div key={key}>
                   <p className="text-body-serif text-xs text-muted-foreground uppercase tracking-wider mb-1">{label}</p>
-                  <div className="flex items-center gap-2">
-                    <code className="flex-1 text-sm px-3 py-2 rounded overflow-x-auto" style={{ background: "hsl(var(--ivory-warm))", color: "hsl(var(--primary))" }}>{link}</code>
-                    <button onClick={() => copyLink(link, key)} className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95 shrink-0" style={{ background: "hsl(var(--gold))", color: "hsl(var(--maroon-deep))" }}>
-                      {copied === key ? "Copied" : "Copy"}
-                    </button>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <code className="flex-1 text-sm px-3 py-2 rounded overflow-x-auto min-w-0" style={{ background: "hsl(var(--ivory-warm))", color: "hsl(var(--primary))" }}>{link}</code>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button onClick={() => copyLink(link, key)} className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95" style={{ background: "hsl(var(--gold))", color: "hsl(var(--maroon-deep))" }}>
+                        {copied === key ? "Copied" : "Copy"}
+                      </button>
+                      <a href={link} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95 no-underline" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+                        Preview
+                      </a>
+                      <button onClick={() => { if (navigator.share) { navigator.share({ title: "SADA SRI NILAYAM Invitation", url: link }); } else { copyLink(link, key); } }} className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>
+                        Share
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
