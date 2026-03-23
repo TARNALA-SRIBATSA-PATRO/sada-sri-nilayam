@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { recordInvitationOpen } from "@/lib/invitations";
 import HeroSection from "@/components/HeroSection";
 import WelcomeSection from "@/components/WelcomeSection";
 import CountdownTimer from "@/components/CountdownTimer";
@@ -21,11 +22,12 @@ const InvitationPage = () => {
     ? decodeURIComponent(id).replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
     : "Dear Guest";
 
-  // Show calendar modal after a delay
+  // Record invitation open and show calendar modal after delay
   useEffect(() => {
+    if (id) recordInvitationOpen(decodeURIComponent(id));
     const timer = setTimeout(() => setShowCalendar(true), 6000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [id]);
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: "hsl(40, 33%, 96%)" }}>
