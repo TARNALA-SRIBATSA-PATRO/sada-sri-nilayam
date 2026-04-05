@@ -4,7 +4,11 @@
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const MASTER_EMAIL   = "tsribatsapatro@gmail.com";
-const FROM_ADDRESS   = "Sada Sri Nilayam <noreply@sadasrinilayam.com>";
+// ── Sender address ───────────────────────────────────────────────────────────
+// Using Resend's shared domain so emails work without custom domain verification.
+// Once sadasrinilayam.com DNS records (SPF/DKIM) are added at resend.com/domains,
+// replace this with: "Sada Sri Nilayam <noreply@sadasrinilayam.com>"
+const FROM_ADDRESS   = "Sada Sri Nilayam <onboarding@resend.dev>";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin",  "*");

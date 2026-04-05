@@ -2,105 +2,90 @@ import { useState, useRef, useEffect } from "react";
 
 const MUSIC_SRC = "/ekadantaya-vakratundaya-flute-version-credit-rahul-crishnan-youtube-channel.mp3";
 const TARGET_VOLUME = 0.35;
-const FADE_DURATION_MS = 1800; // smooth fade-in duration
+const FADE_MS = 2000; // 2 s fade-in
 
 const MusicToggle = () => {
   const [playing, setPlaying] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const startedRef = useRef(false);
   const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Mirror of `playing` state readable inside any closure without stale capture
   const playingRef = useRef(true);
 
-  // Keep playingRef in sync whenever state changes
-  useEffect(() => {
-    playingRef.current = playing;
-  }, [playing]);
+  useEffect(() => { playingRef.current = playing; }, [playing]);
 
-  /** Gradually ramp volume from 0 → TARGET_VOLUME over FADE_DURATION_MS */
+  /** Ramp volume 0 → TARGET_VOLUME over FADE_MS */
   const fadeIn = (audio: HTMLAudioElement) => {
     if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
     audio.volume = 0;
-    const steps = 40;
-    const stepTime = FADE_DURATION_MS / steps;
-    const volumeStep = TARGET_VOLUME / steps;
-    let current = 0;
+    const steps = 50;
+    const stepTime = FADE_MS / steps;
+    const volStep = TARGET_VOLUME / steps;
+    let i = 0;
     fadeIntervalRef.current = setInterval(() => {
-      current += 1;
-      audio.volume = Math.min(TARGET_VOLUME, current * volumeStep);
-      if (current >= steps) {
+      i++;
+      audio.volume = Math.min(TARGET_VOLUME, i * volStep);
+      if (i >= steps) {
         clearInterval(fadeIntervalRef.current!);
         fadeIntervalRef.current = null;
       }
     }, stepTime);
   };
 
-  /** Start playback + fade in. Safe to call multiple times (guarded by startedRef). */
-  const startWithFade = () => {
-    const audio = audioRef.current;
-    if (startedRef.current || !audio) return;
-    audio.play().then(() => {
-      startedRef.current = true;
-      fadeIn(audio);
-    }).catch(() => {
-      // Autoplay still blocked — interaction listener below will retry
-    });
-  };
-
   useEffect(() => {
     const audio = new Audio(MUSIC_SRC);
     audio.loop = true;
-    audio.volume = 0; // start silent; fade-in will raise it
+    audio.volume = 0;
+    // ── KEY TRICK: muted autoplay is ALWAYS allowed by browsers ──────────
+    // We start playing silently right away, then unmute + fade-in after
+    // the welcome animation finishes. Zero jerk, zero blocked-play error.
+    audio.muted = true;
     audioRef.current = audio;
 
-    // ── Trigger: welcome animation complete ───────────────────────────────
-    // This fires at ~4800ms into page load after the welcome screen fades away.
+    // Begin buffering / silent playback immediately
+    audio.play().catch(() => {
+      // Totally blocked (very rare) — fall through to interaction listener
+    });
+
+    // ── Event: welcome animation done → unmute + fade in ─────────────────
     const handleWelcomeComplete = () => {
-      if (playingRef.current) startWithFade();
+      if (!playingRef.current) return;   // user muted before animation ended
+      audio.muted = false;
+      fadeIn(audio);
     };
     window.addEventListener("welcome:complete", handleWelcomeComplete);
 
-    // ── Fallback: first user gesture (scroll / tap / click) ───────────────
-    // Handles browsers that block even deferred autoplay.
+    // ── Fallback: if play() above was blocked, first gesture rescues it ───
     const handleInteraction = () => {
-      if (!startedRef.current && playingRef.current) startWithFade();
-      if (startedRef.current) {
-        document.removeEventListener("click",      handleInteraction);
-        document.removeEventListener("touchstart", handleInteraction);
-        document.removeEventListener("scroll",     handleInteraction);
+      if (audio.paused) {
+        audio.play().then(() => {
+          if (!audio.muted) return;      // welcome:complete already fired
+          // Still in animation — will unmute via welcome:complete
+        }).catch(() => {});
       }
+      document.removeEventListener("click",      handleInteraction);
+      document.removeEventListener("touchstart", handleInteraction);
     };
+    document.addEventListener("click",      handleInteraction, { once: true });
+    document.addEventListener("touchstart", handleInteraction, { once: true });
 
-    document.addEventListener("click",      handleInteraction, { once: false });
-    document.addEventListener("touchstart", handleInteraction, { once: false });
-    document.addEventListener("scroll",     handleInteraction, { once: false, passive: true });
-
-    // ── Cross-component pause / resume (e.g. PhotoGallery video) ─────────
+    // ── PhotoGallery video sync ───────────────────────────────────────────
     const handleMusicPause = () => {
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
-        fadeIntervalRef.current = null;
-      }
-      audioRef.current?.pause();
+      if (fadeIntervalRef.current) { clearInterval(fadeIntervalRef.current); fadeIntervalRef.current = null; }
+      audio.pause();
     };
     const handleMusicResume = () => {
-      if (playingRef.current && startedRef.current && audioRef.current) {
-        audioRef.current.play().catch(() => {});
-        // Restore volume gently if it was faded out previously
-        if (audioRef.current.volume < TARGET_VOLUME) fadeIn(audioRef.current);
-      }
+      if (!playingRef.current) return;
+      audio.play().catch(() => {});
+      if (!audio.muted && audio.volume < TARGET_VOLUME) fadeIn(audio);
     };
-
     window.addEventListener("music:pause",  handleMusicPause);
     window.addEventListener("music:resume", handleMusicResume);
 
     return () => {
-      document.removeEventListener("click",      handleInteraction);
-      document.removeEventListener("touchstart", handleInteraction);
-      document.removeEventListener("scroll",     handleInteraction);
       window.removeEventListener("welcome:complete", handleWelcomeComplete);
       window.removeEventListener("music:pause",  handleMusicPause);
       window.removeEventListener("music:resume", handleMusicResume);
+      document.removeEventListener("click",      handleInteraction);
+      document.removeEventListener("touchstart", handleInteraction);
       if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
       audio.pause();
       audioRef.current = null;
@@ -112,15 +97,11 @@ const MusicToggle = () => {
     const audio = audioRef.current;
     if (!audio) return;
     if (playing) {
-      if (fadeIntervalRef.current) {
-        clearInterval(fadeIntervalRef.current);
-        fadeIntervalRef.current = null;
-      }
+      if (fadeIntervalRef.current) { clearInterval(fadeIntervalRef.current); fadeIntervalRef.current = null; }
       audio.pause();
     } else {
+      audio.muted = false;
       audio.play().catch(() => {});
-      startedRef.current = true;
-      // Fade in if volume was at zero
       if (audio.volume < TARGET_VOLUME) fadeIn(audio);
     }
     setPlaying((p) => !p);
@@ -138,14 +119,12 @@ const MusicToggle = () => {
       aria-label={playing ? "Mute music" : "Play music"}
     >
       {playing ? (
-        /* Speaker with sound waves */
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--gold))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
           <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
           <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
         </svg>
       ) : (
-        /* Speaker muted (X) */
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--gold))" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
           <line x1="23" y1="9" x2="17" y2="15" />
