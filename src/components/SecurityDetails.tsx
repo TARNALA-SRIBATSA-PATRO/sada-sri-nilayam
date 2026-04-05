@@ -94,7 +94,7 @@ const SecurityDetails = ({ guestName }: SecurityDetailsProps) => {
               <div className="flex items-start gap-3">
                 <span className="text-body-serif text-sm text-muted-foreground uppercase tracking-wider min-w-[90px] pt-0.5">House</span>
                 <span className="text-display text-lg font-semibold" style={{ color: "hsl(var(--primary))" }}>
-                  H-33
+                  DX-H-33
                 </span>
               </div>
 
@@ -129,7 +129,7 @@ const SecurityDetails = ({ guestName }: SecurityDetailsProps) => {
               <div className="flex items-start gap-3">
                 <span className="text-body-serif text-sm text-muted-foreground uppercase tracking-wider min-w-[90px] pt-0.5">Location</span>
                 <span className="text-body-serif text-sm text-foreground leading-relaxed">
-                  Gatikrushna Greens, Rangabazar, Alarpur, Bhubaneswar, Khorda, PIN 752100
+                  Ground Floor, Lane 4A DX-H-33, Gatikrushna Green, Rangabazar
                 </span>
               </div>
             </div>

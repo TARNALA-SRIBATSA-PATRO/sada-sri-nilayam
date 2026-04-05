@@ -1,9 +1,9 @@
 import useScrollReveal from "@/hooks/useScrollReveal";
 
 const VENUE = {
-  house: "H-33",
+  house: "DX-H-33",
   name: "SADA SRI NILAYAM",
-  address: "Gatikrushna Greens, Rangabazar, Alarpur, Bhubaneswar, Khorda, PIN 752100",
+  address: "Lane 4A DX-H-33, Gatikrushna Green, Rangabazar, Bhubneswar",
   mapUrl: "https://www.google.com/maps?q=Sada+Sri+Nilayam&t=k&z=17&ie=UTF8&iwloc=&output=embed",
   directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=Sada+Sri+Nilayam&travelmode=driving",
 };

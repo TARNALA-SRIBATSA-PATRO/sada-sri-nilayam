@@ -53,7 +53,7 @@ const CalendarModal = ({ onClose, guestName, adminContacts, invitationUrl, sentB
 You are warmly invited to the housewarming ceremony of SADA SRI NILAYAM by the Patro Family.
 
 Event: Housewarming Ceremony
-Location: Sada Sri Nilayam, H-33, Gatikrushna Greens, Rangabazar, Alarpur, Bhubaneswar, Khorda, PIN 752100
+Location: Sada Sri Nilayam, Lane 4A DX-H-33, Gatikrushna Green, Rangabazar, Bhubneswar
 
 Contact the Hosts:
 ${adminPhones}

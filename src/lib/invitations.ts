@@ -190,7 +190,7 @@ export function generateShareText(inv: Invitation, eventDate?: Date): string {
     text += `A Special Note For You:\n${inv.customMessage}\n\n`;
   }
 
-  text += `Venue:\nHouse No. H-33, Sada Sri Nilayam\nGatikrushna Greens, Rangabazar,\nAlarpur, Bhubaneswar, Khorda, PIN 752100\n\n`;
+  text += `Venue:\nSada Sri Nilayam, Lane 4A DX-H-33,\nGatikrushna Green, Rangabazar, Bhubneswar\n\n`;
   text += `Date & Time:\n${formattedDate}\n\n`;
   text += `Please find your detailed invitation card and location map at the link below:\n`;
   text += getInviteUrl(inv.id);
