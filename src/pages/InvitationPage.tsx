@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
-import { recordInvitationOpen, getInvitationBySlug, getAdmins } from "@/lib/invitations";
+import { recordInvitationOpenById, getInvitationById, getAdmins, type Invitation, type AdminUser } from "@/lib/invitations";
 import HeroSection from "@/components/HeroSection";
 import WelcomeSection from "@/components/WelcomeSection";
+import HouseNameMeaning from "@/components/HouseNameMeaning";
 import CountdownTimer from "@/components/CountdownTimer";
 import VenueSection from "@/components/VenueSection";
 import PhotoGallery from "@/components/PhotoGallery";
@@ -16,44 +17,83 @@ import SecurityDetails from "@/components/SecurityDetails";
 const InvitationPage = () => {
   const { id } = useParams();
   const [showCalendar, setShowCalendar] = useState(false);
-  const [invData, setInvData] = useState<{ withFamily: boolean; customMessage: string } | null>(null);
+  // Track if it's been auto-shown this session — dismissed = never auto-open again until refresh
+  const calendarAutoShown = useRef(false);
+  const venueSentinelRef = useRef<HTMLDivElement>(null);
 
-  const guestName = id
-    ? decodeURIComponent(id).replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
-    : "Dear Guest";
+  const [inv, setInv] = useState<Invitation | null>(null);
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
+
+  const guestId = id ? decodeURIComponent(id) : "";
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const isPreview = searchParams.get('preview') === 'true';
+
+  // Show calendar toast the moment the user scrolls to the Venue section
+  useEffect(() => {
+    const sentinel = venueSentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !calendarAutoShown.current) {
+          calendarAutoShown.current = true;
+          setShowCalendar(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
-    if (id) {
-      recordInvitationOpen(decodeURIComponent(id));
-      const inv = getInvitationBySlug(decodeURIComponent(id));
-      if (inv) {
-        setInvData({ withFamily: inv.withFamily, customMessage: inv.customMessage });
-      }
+    if (guestId) {
+      getInvitationById(guestId).then(i => {
+        if (i && (!i.isDeleted || isPreview)) {
+          setInv(i);
+          if (!isPreview) recordInvitationOpenById(guestId);
+        }
+      });
     }
-    const timer = setTimeout(() => setShowCalendar(true), 6000);
-    return () => clearTimeout(timer);
-  }, [id]);
+  }, [guestId, isPreview]);
 
-  const admins = getAdmins().filter((a) => a.phone);
+  useEffect(() => {
+    getAdmins().then(a => setAdmins(a.filter(ad => ad.phone)));
+  }, []);
+
+  const guestName = inv?.personName || "Dear Guest";
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ background: "hsl(40, 33%, 96%)" }}>
       <HeroSection />
       <WelcomeSection
         userName={guestName}
-        withFamily={invData?.withFamily}
-        customMessage={invData?.customMessage}
+        withFamily={inv?.withFamily}
+        customMessage={inv?.customMessage}
       />
       <CountdownTimer />
-      <VenueSection />
+      <VenueSection onSaveDate={() => setShowCalendar(true)} />
+      {/* Sentinel placed right inside the Venue section — fires toast when user sees venue */}
+      <div ref={venueSentinelRef} style={{ height: "1px", marginTop: "-1px", pointerEvents: "none" }} />
       <PhotoGallery />
       <FamilyMessage />
       <SecurityDetails guestName={guestName} />
-      <ContactSection userName={guestName} adminContacts={admins} />
+      <HouseNameMeaning />
+      <ContactSection userName={guestName} adminContacts={admins} sentBy={inv?.sentBy} invitationUrl={window.location.href} />
       <InvitationFooter />
       <MusicToggle />
 
-      {showCalendar && <CalendarModal onClose={() => setShowCalendar(false)} />}
+      {showCalendar && (
+        <CalendarModal 
+          onClose={() => setShowCalendar(false)} 
+          guestName={guestName}
+          adminContacts={admins}
+          invitationUrl={window.location.href}
+          sentBy={inv?.sentBy}
+          withFamily={inv?.withFamily}
+        />
+      )}
     </div>
   );
 };

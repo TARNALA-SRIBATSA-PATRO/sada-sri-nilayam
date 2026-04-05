@@ -10,7 +10,7 @@ const SecurityDetails = ({ guestName }: SecurityDetailsProps) => {
   return (
     <>
       {/* Trigger section */}
-      <section className="py-12 px-6">
+      <section className="py-10 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p
             className="text-body-serif text-base sm:text-lg text-muted-foreground mb-4"

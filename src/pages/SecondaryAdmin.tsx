@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams } from "react-router-dom";
+import { RefreshCw } from "lucide-react";
 import {
   getInvitations,
   addInvitation,
@@ -8,6 +9,10 @@ import {
   getAdminById,
   getInviteUrl,
   recordAdminAccess,
+  generateShareText,
+  shareContent,
+  restoreInvitation,
+  hardDeleteInvitation,
   type Invitation,
 } from "@/lib/invitations";
 import {
@@ -42,24 +47,26 @@ const SecondaryAdmin = () => {
   const [withFamily, setWithFamily] = useState(false);
   const [customMessage, setCustomMessage] = useState("");
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewName, setPreviewName] = useState("");
 
   const [editInv, setEditInv] = useState<Invitation | null>(null);
   const [editForm, setEditForm] = useState({ personName: "", nickname: "", email: "", withFamily: false, customMessage: "" });
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string, name: string, hard?: boolean } | null>(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "lastOpened" | "byAdmin">("newest");
   const [filterAdmin, setFilterAdmin] = useState("");
 
-  const reload = () => setInvitations(getInvitations());
+  const reload = async () => setInvitations(await getInvitations());
 
   useEffect(() => {
     if (id) {
-      const a = getAdminById(id);
-      setAdmin(a ? { id: a.id, name: a.name } : { id, name: "Admin" });
+      getAdminById(id).then(a => {
+        setAdmin(a ? { id: a.id, name: a.name } : { id, name: "Admin" });
+      });
       recordAdminAccess(id);
     }
     reload();
@@ -71,8 +78,11 @@ const SecondaryAdmin = () => {
   }, [invitations]);
 
   const filteredInvitations = useMemo(() => {
-    let list = [...invitations];
-    if (searchQuery.trim()) {
+    let list = invitations;
+    // Don't filter by admin — show all invitations by default
+    // The "By Admin" sort mode + filterAdmin dropdown handles explicit filtering
+    list = list.filter((i) => i.isDeleted === showDeleted);
+    if (searchQuery) {
       const q = searchQuery.toLowerCase();
       list = list.filter((i) => i.personName.toLowerCase().includes(q) || i.nickname.toLowerCase().includes(q) || i.sentBy.toLowerCase().includes(q));
     }
@@ -90,7 +100,7 @@ const SecondaryAdmin = () => {
       list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
     return list;
-  }, [invitations, searchQuery, sortBy, filterAdmin]);
+  }, [invitations, searchQuery, sortBy, filterAdmin, showDeleted]);
 
   const getGreeting = useCallback(() => {
     const h = new Date().getHours();
@@ -99,22 +109,27 @@ const SecondaryAdmin = () => {
     return "Good Evening";
   }, []);
 
-  const handleInvite = () => {
+  const handleInvite = async () => {
     if (!personName.trim()) return;
-    addInvitation({ personName: personName.trim(), nickname: nickname.trim(), email: "", sentBy: admin?.name || "Admin", withFamily, customMessage: customMessage.trim() });
-    const link = getInviteUrl(personName.trim());
+    const newInv = await addInvitation({ personName: personName.trim(), nickname: nickname.trim(), email: "", sentBy: admin?.name || "Admin", withFamily, customMessage: customMessage.trim(), isDeleted: false });
+    const link = getInviteUrl(newInv.id);
     setGeneratedLink(link);
     reload();
     setPersonName(""); setNickname(""); setWithFamily(false); setCustomMessage("");
   };
 
   const copyLink = () => {
-    if (generatedLink) { navigator.clipboard.writeText(generatedLink); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+    if (generatedLink) { navigator.clipboard.writeText(generatedLink); setCopied("link"); setTimeout(() => setCopied(null), 2000); }
   };
 
   const openPreview = () => {
     if (!previewName.trim()) return;
-    window.open(getInviteUrl(previewName.trim()), "_blank");
+    const previewInv = invitations.find(i => i.personName.toLowerCase() === previewName.trim().toLowerCase());
+    if (previewInv) {
+      window.open(getInviteUrl(previewInv.id), "_blank");
+    } else {
+      alert("Invitation not found. Please create it first.");
+    }
   };
 
   const formatDate = (iso: string | null) => {
@@ -127,17 +142,26 @@ const SecondaryAdmin = () => {
     setEditForm({ personName: inv.personName, nickname: inv.nickname, email: inv.email, withFamily: inv.withFamily, customMessage: inv.customMessage });
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editInv) return;
-    updateInvitation(editInv.id, editForm);
+    await updateInvitation(editInv.id, editForm);
     setEditInv(null);
     reload();
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteTarget) return;
-    deleteInvitation(deleteTarget.id);
+    if (deleteTarget.hard) {
+      await hardDeleteInvitation(deleteTarget.id);
+    } else {
+      await deleteInvitation(deleteTarget.id);
+    }
     setDeleteTarget(null);
+    reload();
+  };
+
+  const handleRestore = async (id: string) => {
+    await restoreInvitation(id);
     reload();
   };
 
@@ -190,12 +214,17 @@ const SecondaryAdmin = () => {
                 <code className="flex-1 text-sm px-3 py-2 rounded overflow-x-auto min-w-0" style={{ background: "hsl(var(--ivory-warm))", color: "hsl(var(--primary))" }}>{generatedLink}</code>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button onClick={copyLink} className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95" style={{ background: "hsl(var(--gold))", color: "hsl(var(--maroon-deep))" }}>
-                    {copied ? "Copied" : "Copy"}
+                    {copied === "link" ? "Copied" : "Copy"}
                   </button>
                   <a href={generatedLink} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95 no-underline" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
                     Preview
                   </a>
-                  <button onClick={() => { if (navigator.share) { navigator.share({ title: "SADA SRI NILAYAM Invitation", url: generatedLink }); } else { copyLink(); } }} className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>
+                  <button onClick={async () => { 
+                    const invMock = { personName, nickname, email: "", sentBy: "", withFamily, customMessage, id: "", createdAt: "", lastOpenedAt: null, visitCount: 0, isDeleted: false };
+                    const text = generateShareText(invMock);
+                    const res = await shareContent("SADA SRI NILAYAM Invitation", text);
+                    if (res === "copied") { setCopied("link"); setTimeout(() => setCopied(null), 2000); }
+                  }} className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>
                     Share
                   </button>
                 </div>
@@ -207,12 +236,12 @@ const SecondaryAdmin = () => {
         {/* Preview Section */}
         <section className="card-ornate p-6 sm:p-8">
           <h2 className="text-display text-lg font-semibold mb-4" style={{ color: "hsl(var(--primary))" }}>Preview Invitation</h2>
-          <div className="flex gap-3 items-end">
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
+            <div className="flex-1 w-full">
               <label className="text-body-serif text-sm text-muted-foreground block mb-1.5">Guest Name for Preview</label>
               <input type="text" value={previewName} onChange={(e) => setPreviewName(e.target.value)} placeholder="Enter name to preview" className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary" style={inputStyle} />
             </div>
-            <button onClick={openPreview} disabled={!previewName.trim()} className="px-5 py-2.5 rounded-lg text-display font-semibold text-sm transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none shrink-0" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>
+            <button onClick={openPreview} disabled={!previewName.trim()} className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-display font-semibold text-sm transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none shrink-0" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>
               Open Preview
             </button>
           </div>
@@ -220,29 +249,51 @@ const SecondaryAdmin = () => {
 
         {/* Invitations List */}
         <section className="card-ornate p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-display text-lg font-semibold" style={{ color: "hsl(var(--primary))" }}>All Invitations</h2>
-              <span className="text-body-serif text-sm px-3 py-1 rounded-full" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))" }}>{filteredInvitations.length} shown</span>
-            </div>
+          <div className="flex items-center gap-3 mb-5 flex-wrap">
+            <h2 className="text-display text-lg sm:text-xl font-semibold" style={{ color: "hsl(var(--primary))", whiteSpace: "nowrap" }}>
+              {showDeleted ? "Recently Deleted" : "All Invitations"}
+            </h2>
+            <span className="text-body-serif text-xs sm:text-sm px-2.5 sm:px-3 py-1 rounded-full whitespace-nowrap" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))" }}>{filteredInvitations.length} shown</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 mb-5">
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="flex-1 w-full">
               <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, nickname, or admin..." className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary text-sm" style={inputStyle} />
             </div>
-            <div className="flex gap-2">
-              <select value={sortBy} onChange={(e) => { setSortBy(e.target.value as "newest" | "lastOpened" | "byAdmin"); setFilterAdmin(""); }} className="px-3 py-2.5 rounded-lg text-body-serif text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer" style={inputStyle}>
-                <option value="newest">Sort: Newest First</option>
-                <option value="lastOpened">Sort: Last Opened</option>
-                <option value="byAdmin">Filter: By Admin</option>
-              </select>
-              {sortBy === "byAdmin" && (
-                <select value={filterAdmin} onChange={(e) => setFilterAdmin(e.target.value)} className="px-3 py-2.5 rounded-lg text-body-serif text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer" style={inputStyle}>
-                  <option value="">All Admins</option>
-                  {adminNames.map((n) => <option key={n} value={n}>{n}</option>)}
+            
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+              <div className="flex gap-2 flex-1 sm:flex-none">
+                <select value={sortBy} onChange={(e) => { setSortBy(e.target.value as "newest" | "lastOpened" | "byAdmin"); setFilterAdmin(""); }} className="w-full sm:w-auto px-3 py-2.5 rounded-lg text-body-serif text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer" style={inputStyle}>
+                  <option value="newest">Sort: Newest</option>
+                  <option value="lastOpened">Sort: Opened</option>
+                  <option value="byAdmin">By Admin</option>
                 </select>
-              )}
+                {sortBy === "byAdmin" && (
+                  <select value={filterAdmin} onChange={(e) => setFilterAdmin(e.target.value)} className="w-full sm:w-auto px-3 py-2.5 rounded-lg text-body-serif text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-secondary cursor-pointer" style={inputStyle}>
+                    <option value="">All Admins</option>
+                    {adminNames.map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                )}
+              </div>
+              
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={() => setShowDeleted(!showDeleted)}
+                  className="px-3 py-2.5 rounded-lg text-xs font-semibold text-display transition-all hover:scale-105"
+                  style={{ background: showDeleted ? "hsl(var(--primary))" : "hsla(43, 85%, 52%, 0.1)", color: showDeleted ? "hsl(var(--primary-foreground))" : "hsl(var(--primary))" }}
+                >
+                  {showDeleted ? "Active" : "Deleted"}
+                </button>
+                <button
+                  onClick={reload}
+                  className="p-2.5 rounded-lg transition-all hover:scale-105"
+                  style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}
+                  title="Refresh List"
+                  aria-label="Refresh Data"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -267,6 +318,11 @@ const SecondaryAdmin = () => {
                         <span>Sent by {inv.sentBy}</span>
                         <span>Created {formatDate(inv.createdAt)}</span>
                         <span style={{ color: inv.lastOpenedAt ? "hsl(140, 60%, 35%)" : undefined }}>Opened: {formatDate(inv.lastOpenedAt)}</span>
+                        {inv.visitCount > 0 && (
+                          <span style={{ color: "hsl(var(--primary))", fontWeight: 600 }}>
+                            Visits: {inv.visitCount}
+                          </span>
+                        )}
                       </div>
                       {inv.customMessage && (
                         <div className="mt-2 px-3 py-2 rounded-lg text-xs text-body-serif" style={{ background: "hsla(345, 40%, 40%, 0.05)", border: "1px solid hsla(345, 40%, 40%, 0.1)", color: "hsl(var(--foreground))" }}>
@@ -275,9 +331,27 @@ const SecondaryAdmin = () => {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <button onClick={() => openEdit(inv)} className="text-xs px-2.5 py-1.5 rounded-lg transition-all hover:scale-105 text-display font-medium" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>Edit</button>
-                      <button onClick={() => setDeleteTarget({ id: inv.id, name: inv.personName })} className="text-xs px-2.5 py-1.5 rounded-lg transition-all hover:scale-105 text-display font-medium" style={{ background: "hsla(0, 70%, 50%, 0.1)", color: "hsl(0, 70%, 45%)", border: "1px solid hsla(0, 70%, 50%, 0.2)" }}>Delete</button>
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end sm:justify-end mt-4 sm:mt-0 w-full sm:w-auto">
+                      <a href={`${getInviteUrl(inv.id)}${inv.isDeleted ? '?preview=true' : ''}`} target="_blank" rel="noopener noreferrer" className="text-xs px-3 py-2 rounded-lg transition-all hover:scale-105 text-display font-medium no-underline text-center flex-1 sm:flex-none" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
+                        {inv.isDeleted ? "Preview Deleted" : "View"}
+                      </a>
+                      
+                      {!inv.isDeleted ? (
+                        <>
+                          <button onClick={async () => { 
+                            const text = generateShareText(inv); 
+                            const res = await shareContent("SADA SRI NILAYAM Invitation", text);
+                            if (res === "copied") { setCopied(`share-${inv.id}`); setTimeout(() => setCopied(null), 2000); }
+                          }} className="text-xs px-3 py-2 rounded-lg transition-all hover:scale-105 text-display font-medium text-center flex-1 sm:flex-none" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>{copied === `share-${inv.id}` ? "Copied" : "Share"}</button>
+                          <button onClick={() => openEdit(inv)} className="text-xs px-3 py-2 rounded-lg transition-all hover:scale-105 text-display font-medium text-center flex-1 sm:flex-none" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>Edit</button>
+                          <button onClick={() => setDeleteTarget({ id: inv.id, name: inv.personName })} className="text-xs px-3 py-2 rounded-lg transition-all hover:scale-105 text-display font-medium text-center flex-1 sm:flex-none" style={{ background: "hsla(0, 70%, 50%, 0.1)", color: "hsl(0, 70%, 45%)", border: "1px solid hsla(0, 70%, 50%, 0.2)" }}>Delete</button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => handleRestore(inv.id)} className="text-xs px-3 py-2 rounded-lg transition-all hover:scale-105 text-display font-medium text-center flex-1 sm:flex-none" style={{ background: "hsl(140, 60%, 35%)", color: "white" }}>Restore</button>
+                          <button onClick={() => setDeleteTarget({ id: inv.id, name: inv.personName, hard: true })} className="text-xs px-3 py-2 rounded-lg transition-all hover:scale-105 text-display font-medium text-center w-full sm:w-auto" style={{ background: "hsla(0, 70%, 50%, 0.1)", color: "hsl(0, 70%, 45%)", border: "1px solid hsla(0, 70%, 50%, 0.2)" }}>Delete Permanently</button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -293,7 +367,9 @@ const SecondaryAdmin = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="text-display" style={{ color: "hsl(var(--primary))" }}>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription className="text-body-serif">
-              This will permanently delete the invitation for <strong>{deleteTarget?.name}</strong>. This action cannot be undone.
+              {deleteTarget?.hard 
+                ? <>This will permanently delete the invitation for <strong>{deleteTarget?.name}</strong>. This action cannot be undone.</>
+                : <>This will move the invitation for <strong>{deleteTarget?.name}</strong> to the Recently Deleted folder. It will no longer be accessible by the guest.</>}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -145,58 +145,16 @@
   }
 }
 
-/* Curtain styles */
-.curtain-left, .curtain-right {
-  position: fixed;
-  top: 0;
-  width: 50%;
-  height: 100vh;
-  z-index: 100;
-  overflow: hidden;
+/* Petal animations */
+@keyframes petal-fall {
+  0%   { transform: translateY(-20px) rotate(0deg);   opacity: 0.9; }
+  50%  { opacity: 0.75; }
+  100% { transform: translateY(110vh) rotate(540deg); opacity: 0; }
 }
-.curtain-left { left: 0; }
-.curtain-right { right: 0; }
-
-.curtain-fabric {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    180deg,
-    hsl(345, 75%, 22%) 0%,
-    hsl(345, 70%, 28%) 20%,
-    hsl(345, 65%, 25%) 50%,
-    hsl(345, 75%, 20%) 80%,
-    hsl(345, 80%, 16%) 100%
-  );
-  position: relative;
-}
-
-.curtain-fabric::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent,
-    hsla(43, 85%, 52%, 0.06) 2px,
-    transparent 4px,
-    transparent 30px
-  );
-}
-
-.curtain-fabric::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    90deg,
-    transparent,
-    transparent 20px,
-    hsla(0, 0%, 0%, 0.08) 20px,
-    hsla(0, 0%, 0%, 0.08) 22px,
-    transparent 22px,
-    transparent 60px
-  );
+@keyframes petal-sway {
+  0%, 100% { margin-left: 0px; }
+  25%       { margin-left: 30px; }
+  75%       { margin-left: -30px; }
 }
 
 /* Flower petal */

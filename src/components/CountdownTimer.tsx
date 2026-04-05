@@ -13,14 +13,15 @@ const CountdownTimer = () => {
   const { ref, visible } = useScrollReveal();
   const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
   const [expired, setExpired] = useState(false);
-  const [eventDate, setEventDateState] = useState<Date>(getEventDate());
+  const [eventDate, setEventDateState] = useState<Date | null>(null);
 
   useEffect(() => {
-    setEventDateState(getEventDate());
+    getEventDate().then(setEventDateState);
   }, []);
 
   useEffect(() => {
     const calc = () => {
+      if (!eventDate) return;
       const now = new Date().getTime();
       const diff = eventDate.getTime() - now;
       if (diff <= 0) {
@@ -40,6 +41,7 @@ const CountdownTimer = () => {
   }, [eventDate]);
 
   const formatEventDate = () => {
+    if (!eventDate) return "";
     return eventDate.toLocaleDateString("en-IN", {
       month: "long",
       day: "numeric",
@@ -52,28 +54,19 @@ const CountdownTimer = () => {
   };
 
   if (expired) return null;
-  if (!timeLeft) {
-    return (
-      <section className="py-20 md:py-28 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-display text-2xl sm:text-3xl font-semibold mb-2 text-primary">
-            The Auspicious Day Awaits
-          </h2>
-        </div>
-      </section>
-    );
-  }
-
-  const units = [
-    { label: "Days", value: timeLeft.days },
-    { label: "Hours", value: timeLeft.hours },
-    { label: "Minutes", value: timeLeft.minutes },
-    { label: "Seconds", value: timeLeft.seconds },
-  ];
 
   return (
-    <section ref={ref} className="py-20 md:py-28 px-6">
-      <div className="max-w-3xl mx-auto text-center">
+    <section ref={ref} className="py-16 md:py-28 px-4 sm:px-6 min-h-[250px] flex items-center justify-center">
+      {eventDate && timeLeft && (() => {
+        const units = [
+          { label: "Days", value: timeLeft.days },
+          { label: "Hours", value: timeLeft.hours },
+          { label: "Minutes", value: timeLeft.minutes },
+          { label: "Seconds", value: timeLeft.seconds },
+        ];
+        
+        return (
+          <div className="max-w-3xl mx-auto text-center w-full">
         <h2
           className="text-display text-2xl sm:text-3xl font-semibold mb-2"
           style={{
@@ -95,11 +88,11 @@ const CountdownTimer = () => {
           {formatEventDate()}
         </p>
 
-        <div className="flex justify-center gap-4 sm:gap-6">
+        <div className="flex justify-center gap-2 sm:gap-4 md:gap-6">
           {units.map((unit, i) => (
             <div
               key={unit.label}
-              className="card-ornate px-4 py-5 sm:px-6 sm:py-6 min-w-[70px] sm:min-w-[90px]"
+              className="card-ornate px-3 py-4 sm:px-6 sm:py-6 min-w-[62px] sm:min-w-[90px]"
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? "translateY(0)" : "translateY(20px)",
@@ -107,7 +100,7 @@ const CountdownTimer = () => {
               }}
             >
               <span
-                className="text-display text-3xl sm:text-4xl font-bold block tabular-nums"
+                className="text-display text-2xl sm:text-4xl font-bold block tabular-nums"
                 style={{ color: "hsl(345, 70%, 28%)" }}
               >
                 {String(unit.value).padStart(2, "0")}
@@ -119,6 +112,8 @@ const CountdownTimer = () => {
           ))}
         </div>
       </div>
+        );
+      })()}
     </section>
   );
 };
