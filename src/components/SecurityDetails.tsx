@@ -129,7 +129,7 @@ const SecurityDetails = ({ guestName }: SecurityDetailsProps) => {
               <div className="flex items-start gap-3">
                 <span className="text-body-serif text-sm text-muted-foreground uppercase tracking-wider min-w-[90px] pt-0.5">Location</span>
                 <span className="text-body-serif text-sm text-foreground leading-relaxed">
-                  Ground Floor, Lane 4A DX-H-33, Gatikrushna Green, Rangabazar
+                  Lane 4A DX-H-33, Gatikrushna Green, Rangabazar, Bhubneswar
                 </span>
               </div>
             </div>

@@ -3,7 +3,7 @@
 // CC: tsribatsapatro@gmail.com (master) unless admin IS that address.
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
-const MASTER_EMAIL   = "tsribatsapatro@gmail.com";
+const MASTER_EMAIL   = "bibhuschatgpt@gmail.com";
 // ── Sender address ───────────────────────────────────────────────────────────
 // Using Resend's shared domain so emails work without custom domain verification.
 // Once sadasrinilayam.com DNS records (SPF/DKIM) are added at resend.com/domains,
@@ -33,6 +33,12 @@ export default async function handler(req, res) {
     const safeMessage  = String(message).trim()
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const sentAt       = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
+
+    // ── TEMPORARY: Resend free tier only allows sending to the account owner's
+    // email until a custom domain is verified at resend.com/domains.
+    // Once sadasrinilayam.com is verified, remove the next line so emails
+    // go directly to adminEmail.
+    const effectiveAdminEmail = MASTER_EMAIL;
 
     const ccList = adminEmail.toLowerCase().trim() !== MASTER_EMAIL.toLowerCase()
       ? [MASTER_EMAIL]
@@ -154,8 +160,8 @@ export default async function handler(req, res) {
 
     const emailPayload = {
       from: FROM_ADDRESS,
-      to:   [adminEmail.trim()],
-      ...(ccList.length > 0 && { cc: ccList }),
+      to:   [effectiveAdminEmail],
+      // CC skipped while domain unverified (to & CC would be same address)
       subject: `💌 Message from your guest ${displayName} — Sada Sri Nilayam`,
       html:    htmlBody,
       text:    plainText,
