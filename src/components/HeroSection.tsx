@@ -9,6 +9,8 @@ const HeroSection = () => {
 
   const handleAnimComplete = useCallback(() => {
     setAnimDone(true);
+    // Signal other components (MusicToggle) that the welcome screen is gone
+    window.dispatchEvent(new CustomEvent("welcome:complete"));
   }, []);
 
   // Force scroll to top on mount/refresh and disable browser scroll restoration

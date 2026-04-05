@@ -1,11 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 
 const MUSIC_SRC = "/ekadantaya-vakratundaya-flute-version-credit-rahul-crishnan-youtube-channel.mp3";
+const TARGET_VOLUME = 0.35;
+const FADE_DURATION_MS = 1800; // smooth fade-in duration
 
 const MusicToggle = () => {
   const [playing, setPlaying] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const startedRef = useRef(false);
+  const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Mirror of `playing` state readable inside any closure without stale capture
   const playingRef = useRef(true);
 
@@ -14,26 +17,53 @@ const MusicToggle = () => {
     playingRef.current = playing;
   }, [playing]);
 
+  /** Gradually ramp volume from 0 → TARGET_VOLUME over FADE_DURATION_MS */
+  const fadeIn = (audio: HTMLAudioElement) => {
+    if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+    audio.volume = 0;
+    const steps = 40;
+    const stepTime = FADE_DURATION_MS / steps;
+    const volumeStep = TARGET_VOLUME / steps;
+    let current = 0;
+    fadeIntervalRef.current = setInterval(() => {
+      current += 1;
+      audio.volume = Math.min(TARGET_VOLUME, current * volumeStep);
+      if (current >= steps) {
+        clearInterval(fadeIntervalRef.current!);
+        fadeIntervalRef.current = null;
+      }
+    }, stepTime);
+  };
+
+  /** Start playback + fade in. Safe to call multiple times (guarded by startedRef). */
+  const startWithFade = () => {
+    const audio = audioRef.current;
+    if (startedRef.current || !audio) return;
+    audio.play().then(() => {
+      startedRef.current = true;
+      fadeIn(audio);
+    }).catch(() => {
+      // Autoplay still blocked — interaction listener below will retry
+    });
+  };
+
   useEffect(() => {
     const audio = new Audio(MUSIC_SRC);
     audio.loop = true;
-    audio.volume = 0.35;
+    audio.volume = 0; // start silent; fade-in will raise it
     audioRef.current = audio;
 
-    const tryPlay = () => {
-      if (startedRef.current || !audioRef.current) return;
-      audioRef.current.play().then(() => {
-        startedRef.current = true;
-      }).catch(() => {
-        // Autoplay blocked — will start on first user gesture
-      });
+    // ── Trigger: welcome animation complete ───────────────────────────────
+    // This fires at ~4800ms into page load after the welcome screen fades away.
+    const handleWelcomeComplete = () => {
+      if (playingRef.current) startWithFade();
     };
+    window.addEventListener("welcome:complete", handleWelcomeComplete);
 
-    tryPlay();
-
-    // Start on first interaction only if the user hasn't manually muted
+    // ── Fallback: first user gesture (scroll / tap / click) ───────────────
+    // Handles browsers that block even deferred autoplay.
     const handleInteraction = () => {
-      if (!startedRef.current && playingRef.current) tryPlay();
+      if (!startedRef.current && playingRef.current) startWithFade();
       if (startedRef.current) {
         document.removeEventListener("click",      handleInteraction);
         document.removeEventListener("touchstart", handleInteraction);
@@ -45,14 +75,19 @@ const MusicToggle = () => {
     document.addEventListener("touchstart", handleInteraction, { once: false });
     document.addEventListener("scroll",     handleInteraction, { once: false, passive: true });
 
-    // Allow other components (e.g. PhotoGallery during video) to pause/resume music
+    // ── Cross-component pause / resume (e.g. PhotoGallery video) ─────────
     const handleMusicPause = () => {
+      if (fadeIntervalRef.current) {
+        clearInterval(fadeIntervalRef.current);
+        fadeIntervalRef.current = null;
+      }
       audioRef.current?.pause();
     };
     const handleMusicResume = () => {
-      // Only resume if the user hasn't manually muted (playingRef reflects current state)
-      if (playingRef.current && startedRef.current) {
-        audioRef.current?.play().catch(() => {});
+      if (playingRef.current && startedRef.current && audioRef.current) {
+        audioRef.current.play().catch(() => {});
+        // Restore volume gently if it was faded out previously
+        if (audioRef.current.volume < TARGET_VOLUME) fadeIn(audioRef.current);
       }
     };
 
@@ -63,20 +98,30 @@ const MusicToggle = () => {
       document.removeEventListener("click",      handleInteraction);
       document.removeEventListener("touchstart", handleInteraction);
       document.removeEventListener("scroll",     handleInteraction);
+      window.removeEventListener("welcome:complete", handleWelcomeComplete);
       window.removeEventListener("music:pause",  handleMusicPause);
       window.removeEventListener("music:resume", handleMusicResume);
+      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
       audio.pause();
       audioRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggle = () => {
-    if (!audioRef.current) return;
+    const audio = audioRef.current;
+    if (!audio) return;
     if (playing) {
-      audioRef.current.pause();
+      if (fadeIntervalRef.current) {
+        clearInterval(fadeIntervalRef.current);
+        fadeIntervalRef.current = null;
+      }
+      audio.pause();
     } else {
-      audioRef.current.play().catch(() => {});
+      audio.play().catch(() => {});
       startedRef.current = true;
+      // Fade in if volume was at zero
+      if (audio.volume < TARGET_VOLUME) fadeIn(audio);
     }
     setPlaying((p) => !p);
   };
