@@ -9,7 +9,6 @@ import VenueSection from "@/components/VenueSection";
 import PhotoGallery from "@/components/PhotoGallery";
 import FamilyMessage from "@/components/FamilyMessage";
 import ContactSection from "@/components/ContactSection";
-import InvitationFooter from "@/components/InvitationFooter";
 import MusicToggle from "@/components/MusicToggle";
 import CalendarModal from "@/components/CalendarModal";
 import SecurityDetails from "@/components/SecurityDetails";
@@ -81,7 +80,6 @@ const InvitationPage = () => {
       <SecurityDetails guestName={guestName} />
       <HouseNameMeaning />
       <ContactSection userName={guestName} adminContacts={admins} sentBy={inv?.sentBy} invitationUrl={window.location.href} />
-      <InvitationFooter />
       <MusicToggle />
 
       {showCalendar && (
