@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import useScrollReveal from "@/hooks/useScrollReveal";
 import type { AdminUser } from "@/lib/invitations";
-import { sendGuestMessage } from "@/lib/sendMessage";
 
 interface ContactSectionProps {
   userName?: string;
@@ -10,20 +9,14 @@ interface ContactSectionProps {
   invitationUrl?: string;
 }
 
-type FormState = "idle" | "sending" | "success" | "error";
 
 // ─── Main Section ──────────────────────────────────────────────────────────────
 const ContactSection = ({
   userName = "",
   adminContacts = [],
   sentBy,
-  invitationUrl,
 }: ContactSectionProps) => {
   const { ref, visible } = useScrollReveal();
-  const [nickname, setNickname] = useState("");
-  const [message, setMessage] = useState("");
-  const [formState, setFormState] = useState<FormState>("idle");
-  const [errorMsg, setErrorMsg] = useState("");
 
   const defaultBibhu = { name: "Bibhu", phone: "6371210544" };
   const displayedContacts: { name: string; phone: string }[] = [];
@@ -46,47 +39,6 @@ const ContactSection = ({
   ) {
     displayedContacts.push(defaultBibhu);
   }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim()) return;
-
-    const adminEmail = senderAdmin?.email?.trim() || "";
-    if (!adminEmail) {
-      setErrorMsg(
-        "Unable to determine the admin's email. Please call us directly."
-      );
-      setFormState("error");
-      return;
-    }
-
-    setFormState("sending");
-    setErrorMsg("");
-
-    const result = await sendGuestMessage({
-      guestName: userName || "Guest",
-      nickname: nickname.trim() || undefined,
-      message: message.trim(),
-      adminEmail,
-      adminName: senderAdmin?.name,
-      invitationUrl,
-    });
-
-    if (result.success) {
-      setFormState("success");
-      setMessage("");
-      setNickname("");
-      setTimeout(() => setFormState("idle"), 5000);
-    } else {
-      const err = result as { success: false; error: string };
-      setErrorMsg(err.error || "Something went wrong. Please try again.");
-      setFormState("error");
-      setTimeout(() => setFormState("idle"), 5000);
-    }
-  };
-
-  const isSending = formState === "sending";
-  const MAX_CHARS = 500;
 
   return (
     <section
@@ -141,235 +93,32 @@ const ContactSection = ({
             className="text-script text-lg sm:text-xl mb-1"
             style={{ color: "hsl(43,75%,48%)" }}
           >
-            reach out to us
+            we'd love to hear from you
           </p>
           <h2
             className="text-display text-2xl sm:text-3xl md:text-4xl font-semibold"
             style={{ color: "hsl(345,70%,28%)" }}
           >
-            Get in Touch
+            Reach Out to Us
           </h2>
           <div className="section-divider mt-4" />
         </div>
 
-        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
-          {/* ── Left: Contact Cards ─────────────────────────────── */}
-          {displayedContacts.length > 0 && (
-            <div
-              style={{
-                opacity: visible ? 1 : 0,
-                transform: visible ? "translateX(0)" : "translateX(-24px)",
-                transition: "all 0.7s cubic-bezier(0.16,1,0.3,1) 0.15s",
-              }}
-            >
-              <h3
-                className="text-display text-lg sm:text-xl font-semibold mb-5"
-                style={{ color: "hsl(345,70%,28%)" }}
-              >
-                Call Us Directly
-              </h3>
-
-              <div className="space-y-4">
-                {displayedContacts.map((c, idx) => (
-                  <ContactCard key={c.phone} contact={c} delayMs={idx * 80} />
-                ))}
-              </div>
-
-              {/* Info note */}
-              <div
-                className="mt-6 flex items-start gap-2.5 px-4 py-3 rounded-lg"
-                style={{
-                  background: "hsla(43,85%,52%,0.07)",
-                  border: "1px solid hsla(43,85%,52%,0.22)",
-                }}
-              >
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="hsl(43,70%,46%)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="mt-0.5 flex-shrink-0"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
-                </svg>
-                <p
-                  className="text-body-serif text-xs sm:text-sm leading-relaxed"
-                  style={{ color: "hsl(345,45%,36%)" }}
-                >
-                  Happy to answer questions about the ceremony, directions, or
-                  anything else.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ── Right: Message Form ─────────────────────────────── */}
+        {/* Contact Cards — centered, full width */}
+        {displayedContacts.length > 0 && (
           <div
-            className="card-ornate p-6 sm:p-8 relative"
+            className="max-w-sm mx-auto space-y-4"
             style={{
               opacity: visible ? 1 : 0,
-              transform: visible ? "translateY(0)" : "translateY(24px)",
-              transition: "all 0.7s cubic-bezier(0.16,1,0.3,1) 0.3s",
+              transform: visible ? "translateY(0)" : "translateY(20px)",
+              transition: "all 0.7s cubic-bezier(0.16,1,0.3,1) 0.15s",
             }}
           >
-            {/* Ornate inner top highlight */}
-            <div
-              className="absolute top-0 left-8 right-8 h-px"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent, hsla(43,85%,52%,0.45), transparent)",
-              }}
-            />
-
-            <h3
-              className="text-display text-lg sm:text-xl font-semibold mb-5"
-              style={{ color: "hsl(345,70%,28%)" }}
-            >
-              Send us a Message
-            </h3>
-
-            {formState === "success" ? (
-              <SuccessState />
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Name — read-only */}
-                <div>
-                  <label className="text-body-serif text-xs text-muted-foreground block mb-1.5 tracking-wide uppercase">
-                    Your Name{" "}
-                    <span className="opacity-50 normal-case tracking-normal">
-                      (from your invitation)
-                    </span>
-                  </label>
-                  <div
-                    className="w-full px-4 py-2.5 rounded-lg text-body-serif text-base"
-                    style={{
-                      background: "hsla(43,85%,52%,0.05)",
-                      border: "1px solid hsla(43,85%,52%,0.18)",
-                      color: "hsl(345,50%,30%)",
-                      userSelect: "none",
-                    }}
-                  >
-                    {userName || "Guest"}
-                  </div>
-                </div>
-
-                {/* Nickname */}
-                <FloatingInput
-                  label="Nickname"
-                  hint="optional"
-                  value={nickname}
-                  onChange={setNickname}
-                  disabled={isSending}
-                  placeholder="What shall we call you?"
-                />
-
-                {/* Message */}
-                <FloatingTextarea
-                  label="Message"
-                  required
-                  value={message}
-                  onChange={setMessage}
-                  disabled={isSending}
-                  maxChars={MAX_CHARS}
-                  placeholder="Share your wishes, questions, or anything you'd like to say…"
-                />
-
-                {/* Error banner */}
-                {formState === "error" && errorMsg && (
-                  <div
-                    className="flex items-start gap-2 px-3.5 py-2.5 rounded-lg text-body-serif text-sm"
-                    style={{
-                      background: "hsla(0,70%,50%,0.07)",
-                      border: "1px solid hsla(0,70%,50%,0.22)",
-                      color: "hsl(0,60%,40%)",
-                    }}
-                  >
-                    <span>⚠️</span>
-                    <span>{errorMsg}</span>
-                  </div>
-                )}
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={isSending || !message.trim()}
-                  className="w-full py-3 rounded-lg text-body-serif text-base font-medium transition-all duration-300 hover:scale-[1.015] active:scale-[0.97] disabled:opacity-55 disabled:pointer-events-none flex items-center justify-center gap-2.5 relative overflow-hidden"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, hsl(345,70%,28%), hsl(345,76%,20%))",
-                    color: "hsl(40,33%,96%)",
-                    boxShadow: "0 4px 20px hsla(345,70%,28%,0.38)",
-                  }}
-                >
-                  {/* Gold shimmer sweep */}
-                  <span
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background:
-                        "linear-gradient(105deg, transparent 40%, hsla(43,85%,80%,0.18) 50%, transparent 60%)",
-                      backgroundSize: "200% 100%",
-                      animation: isSending
-                        ? "none"
-                        : "contact-btn-shimmer 2.8s ease-in-out infinite",
-                    }}
-                  />
-                  {isSending ? (
-                    <>
-                      <svg
-                        className="animate-spin"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                      >
-                        <path
-                          d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"
-                          strokeOpacity="0.25"
-                        />
-                        <path d="M21 12a9 9 0 0 0-9-9" />
-                      </svg>
-                      Sending…
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <line x1="22" y1="2" x2="11" y2="13" />
-                        <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                      </svg>
-                      Send Message
-                    </>
-                  )}
-                </button>
-
-                {!senderAdmin?.email && (
-                  <p
-                    className="text-body-serif text-xs text-center"
-                    style={{ color: "hsl(345,28%,54%)" }}
-                  >
-                    Your message will be delivered to the Patro family.
-                  </p>
-                )}
-              </form>
-            )}
+            {displayedContacts.map((c, idx) => (
+              <ContactCard key={c.phone} contact={c} delayMs={idx * 80} />
+            ))}
           </div>
-        </div>
+        )}
       </div>
 
       <style>{`

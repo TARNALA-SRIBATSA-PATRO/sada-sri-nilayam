@@ -19,14 +19,14 @@ const FamilyMessage = () => {
   return (
     <section
       ref={ref}
-      className="py-12 sm:py-16 md:py-24 px-4 sm:px-6 relative"
+      className="py-6 sm:py-16 md:py-24 px-4 sm:px-6 relative"
       style={{
         background: "linear-gradient(180deg, hsl(40, 33%, 96%) 0%, hsl(38, 30%, 92%) 50%, hsl(40, 33%, 96%) 100%)",
       }}
     >
       <div className="max-w-4xl mx-auto text-center">
         <div
-          className="section-divider mb-8 sm:mb-12"
+          className="section-divider mb-4 sm:mb-12"
           style={{
             opacity: visible ? 1 : 0,
             transition: "opacity 0.8s ease-out",
@@ -34,7 +34,7 @@ const FamilyMessage = () => {
         />
 
         <h2
-          className="text-display text-lg sm:text-2xl md:text-3xl lg:text-4xl text-foreground font-medium italic px-2 sm:px-4"
+          className="text-display text-base sm:text-2xl md:text-3xl lg:text-4xl text-foreground font-medium italic px-2 sm:px-4"
           style={{
             opacity: visible ? 1 : 0,
             transform: visible ? "translateY(0)" : "translateY(20px)",
@@ -48,7 +48,7 @@ const FamilyMessage = () => {
 
         {/* Elegant Family Signatures Card — Compact & Mobile-First */}
         <div
-          className="mt-8 sm:mt-12 py-6 px-5 sm:p-8 md:p-10 relative rounded-xl mx-auto max-w-sm sm:max-w-lg md:max-w-2xl"
+          className="mt-4 sm:mt-12 py-4 px-4 sm:p-8 md:p-10 relative rounded-xl mx-auto max-w-sm sm:max-w-lg md:max-w-2xl"
           style={{
             background: "linear-gradient(135deg, hsl(40, 45%, 99%), hsl(38, 35%, 95%))",
             border: "1px solid hsla(43, 85%, 52%, 0.5)",
@@ -137,7 +137,7 @@ const FamilyMessage = () => {
         </div>
 
         <div
-          className="section-divider mt-10 sm:mt-16"
+          className="section-divider mt-5 sm:mt-16"
           style={{
             opacity: visible ? 1 : 0,
             transition: "opacity 0.8s ease-out 0.9s",

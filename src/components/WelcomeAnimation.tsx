@@ -8,21 +8,6 @@ const MANDALA_PATHS = [
   "M 50 10 A 40 40 0 0 1 90 50 A 40 40 0 0 1 50 90 A 40 40 0 0 1 10 50 A 40 40 0 0 1 50 10 Z",
 ];
 
-const PETALS_CONFIG = [
-  { x: 12, y: -5, size: 10, delay: 0.2, dur: 2.8, color: "hsl(350, 70%, 72%)", rot: 25 },
-  { x: 28, y: -8, size: 8, delay: 0.5, dur: 2.5, color: "hsl(43, 85%, 60%)", rot: -15 },
-  { x: 55, y: -4, size: 12, delay: 0.1, dur: 3.0, color: "hsl(340, 60%, 75%)", rot: 40 },
-  { x: 72, y: -6, size: 9, delay: 0.7, dur: 2.6, color: "hsl(30, 90%, 62%)", rot: -30 },
-  { x: 88, y: -3, size: 11, delay: 0.3, dur: 2.9, color: "hsl(43, 85%, 55%)", rot: 10 },
-  { x: 20, y: -7, size: 7, delay: 0.9, dur: 2.4, color: "hsl(350, 65%, 70%)", rot: -45 },
-  { x: 40, y: -5, size: 9, delay: 0.4, dur: 2.7, color: "hsl(15, 80%, 65%)", rot: 55 },
-  { x: 65, y: -9, size: 8, delay: 0.6, dur: 2.5, color: "hsl(340, 55%, 72%)", rot: -20 },
-  { x: 82, y: -4, size: 10, delay: 0.2, dur: 2.9, color: "hsl(43, 90%, 58%)", rot: 35 },
-  { x: 5,  y: -6, size: 7, delay: 0.8, dur: 2.6, color: "hsl(350, 70%, 73%)", rot: -60 },
-  { x: 95, y: -5, size: 8, delay: 0.3, dur: 2.8, color: "hsl(30, 85%, 60%)", rot: 18 },
-  { x: 48, y: -7, size: 11, delay: 1.0, dur: 2.3, color: "hsl(340, 60%, 74%)", rot: -25 },
-];
-
 const WelcomeAnimation = ({ onComplete }: WelcomeAnimationProps) => {
   const [phase, setPhase] = useState<"enter" | "show" | "exit" | "done">("enter");
 
@@ -50,11 +35,14 @@ const WelcomeAnimation = ({ onComplete }: WelcomeAnimationProps) => {
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
+      onClick={() => window.dispatchEvent(new CustomEvent("audio:unlock"))}
+      onTouchStart={() => window.dispatchEvent(new CustomEvent("audio:unlock"))}
       style={{
         background: "radial-gradient(ellipse at center, hsl(345, 65%, 14%) 0%, hsl(345, 80%, 8%) 60%, hsl(20, 60%, 5%) 100%)",
         opacity: isExit ? 0 : 1,
         transition: isExit ? "opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1)" : "opacity 0.6s ease-out",
         pointerEvents: isExit ? "none" : "all",
+        cursor: "default",
       }}
     >
       {/* Radial glow behind content */}
@@ -68,28 +56,6 @@ const WelcomeAnimation = ({ onComplete }: WelcomeAnimationProps) => {
         }}
       />
 
-      {/* Falling petals */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {PETALS_CONFIG.map((p, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: `${p.x}%`,
-              top: "-5%",
-              width: p.size,
-              height: p.size * 0.65,
-              borderRadius: "50% 0 50% 0",
-              backgroundColor: p.color,
-              transform: `rotate(${p.rot}deg)`,
-              opacity: isShow ? 0.85 : 0,
-              animation: isShow ? `petal-fall ${p.dur}s ease-in ${p.delay}s forwards` : "none",
-              boxShadow: `inset 1px 1px 3px hsla(0,0%,100%,0.25), 0 0 6px ${p.color}`,
-              willChange: "transform",
-            }}
-          />
-        ))}
-      </div>
 
       {/* Spinning mandala ring */}
       <div

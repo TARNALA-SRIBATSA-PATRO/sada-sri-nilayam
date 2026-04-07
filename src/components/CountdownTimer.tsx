@@ -46,17 +46,13 @@ const CountdownTimer = () => {
       month: "long",
       day: "numeric",
       year: "numeric",
-    }) + " at " + eventDate.toLocaleTimeString("en-IN", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
     });
   };
 
   if (expired) return null;
 
   return (
-    <section ref={ref} className="py-16 md:py-28 px-4 sm:px-6 min-h-[250px] flex items-center justify-center">
+    <section ref={ref} className="py-5 md:py-28 px-4 sm:px-6 flex items-center justify-center">
       {eventDate && timeLeft && (() => {
         const units = [
           { label: "Days", value: timeLeft.days },
@@ -68,7 +64,7 @@ const CountdownTimer = () => {
         return (
           <div className="max-w-3xl mx-auto text-center w-full">
         <h2
-          className="text-display text-2xl sm:text-3xl font-semibold mb-2"
+          className="text-display text-xl sm:text-3xl font-semibold mb-1 sm:mb-2"
           style={{
             color: "hsl(345, 70%, 28%)",
             opacity: visible ? 1 : 0,
@@ -79,7 +75,7 @@ const CountdownTimer = () => {
           The Auspicious Day Awaits
         </h2>
         <p
-          className="text-script text-xl text-gold mb-10"
+          className="text-script text-lg sm:text-xl text-gold mb-4 sm:mb-10"
           style={{
             opacity: visible ? 1 : 0,
             transition: "opacity 0.7s ease-out 0.2s",
@@ -88,11 +84,11 @@ const CountdownTimer = () => {
           {formatEventDate()}
         </p>
 
-        <div className="flex justify-center gap-2 sm:gap-4 md:gap-6">
+        <div className="flex justify-center gap-1.5 sm:gap-4 md:gap-6">
           {units.map((unit, i) => (
             <div
               key={unit.label}
-              className="card-ornate px-3 py-4 sm:px-6 sm:py-6 min-w-[62px] sm:min-w-[90px]"
+              className="card-ornate px-2.5 py-3 sm:px-6 sm:py-6 min-w-[58px] sm:min-w-[90px]"
               style={{
                 opacity: visible ? 1 : 0,
                 transform: visible ? "translateY(0)" : "translateY(20px)",
@@ -100,7 +96,7 @@ const CountdownTimer = () => {
               }}
             >
               <span
-                className="text-display text-2xl sm:text-4xl font-bold block tabular-nums"
+                className="text-display text-xl sm:text-4xl font-bold block tabular-nums"
                 style={{ color: "hsl(345, 70%, 28%)" }}
               >
                 {String(unit.value).padStart(2, "0")}

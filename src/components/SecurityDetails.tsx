@@ -10,10 +10,10 @@ const SecurityDetails = ({ guestName }: SecurityDetailsProps) => {
   return (
     <>
       {/* Trigger section */}
-      <section className="py-10 px-4 sm:px-6">
+      <section className="py-4 sm:py-10 px-4 sm:px-6">
         <div className="max-w-2xl mx-auto text-center">
           <p
-            className="text-body-serif text-base sm:text-lg text-muted-foreground mb-4"
+            className="text-body-serif text-sm sm:text-lg text-muted-foreground mb-3 sm:mb-4"
             style={{ lineHeight: 1.7 }}
           >
             At the time of entry, if the security guard asks for details, please cooperate with them and share the below information.

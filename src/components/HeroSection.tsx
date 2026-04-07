@@ -145,23 +145,7 @@ const HeroSection = () => {
         </p>
       </div>
 
-      {/* Scroll indicator */}
-      <div
-        className="absolute bottom-8 z-20"
-        style={{
-          opacity: animDone ? 0.6 : 0,
-          transform: animDone ? "translateY(0)" : "translateY(10px)",
-          transition: "opacity 1s ease-out 1.5s, transform 1s ease-out 1.5s",
-          animation: animDone ? "float-bob 2.5s ease-in-out 1.5s infinite" : "none",
-        }}
-      >
-        <svg width="24" height="36" viewBox="0 0 24 36" fill="none" stroke="hsl(var(--primary))" strokeWidth="1.5">
-          <rect x="1" y="1" width="22" height="34" rx="11" />
-          <circle cx="12" cy="10" r="2" fill="hsl(var(--primary))">
-            <animate attributeName="cy" values="10;22;10" dur="2s" repeatCount="indefinite" />
-          </circle>
-        </svg>
-      </div>
+
 
       <style>{`
         @keyframes glow-pulse {
