@@ -35,8 +35,7 @@ const HouseNameMeaning = () => {
             }}
           />
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-2 gap-3 sm:gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
           {/* Card 1: The Divine Meaning */}
           <div
             className="card-ornate p-3 sm:p-6 md:p-8 lg:p-10 relative flex flex-col h-full"
@@ -50,19 +49,15 @@ const HouseNameMeaning = () => {
               The Divine Meaning
             </h3>
             
-            <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-6">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold min-w-[36px] sm:min-w-[60px] md:min-w-[70px]">Sada</span>
-                <p className="text-body-serif text-xs sm:text-base md:text-lg text-muted-foreground pt-0.5 sm:pt-2">means <b className="text-foreground tracking-wide font-medium">Always</b> or Eternal</p>
-              </div>
-              <div className="flex items-start gap-3 sm:gap-4">
-                <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold min-w-[36px] sm:min-w-[60px] md:min-w-[70px]">Sri</span>
-                <p className="text-body-serif text-xs sm:text-base md:text-lg text-muted-foreground pt-0.5 sm:pt-2">represents <b className="text-foreground tracking-wide font-medium">Prosperity</b> and Goddess Laxmi</p>
-              </div>
-              <div className="flex items-start gap-3 sm:gap-4">
-                <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold min-w-[36px] sm:min-w-[60px] md:min-w-[70px]">Nilayam</span>
-                <p className="text-body-serif text-xs sm:text-base md:text-lg text-muted-foreground pt-0.5 sm:pt-2">translates to <b className="text-foreground tracking-wide font-medium">Home</b> or Abode</p>
-              </div>
+            <div className="flex-1 grid grid-cols-[auto_1fr] items-start content-center gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-6">
+              <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold">Sada</span>
+              <p className="text-body-serif text-xs sm:text-base md:text-lg text-muted-foreground pt-0.5 sm:pt-2">means <b className="text-foreground tracking-wide font-medium">Always</b> or Eternal</p>
+
+              <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold">Sri</span>
+              <p className="text-body-serif text-xs sm:text-base md:text-lg text-muted-foreground pt-0.5 sm:pt-2">represents <b className="text-foreground tracking-wide font-medium">Prosperity</b> and Goddess Laxmi</p>
+
+              <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold">Nilayam</span>
+              <p className="text-body-serif text-xs sm:text-base md:text-lg text-muted-foreground pt-0.5 sm:pt-2">translates to <b className="text-foreground tracking-wide font-medium">Home</b> or Abode</p>
             </div>
 
             <div className="mt-3 sm:mt-8 pt-3 sm:pt-6 border-t border-[hsla(43,85%,52%,0.3)] text-center">
@@ -85,69 +80,61 @@ const HouseNameMeaning = () => {
               The Family Essence
             </h3>
             
-            <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-6">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold min-w-[36px] sm:min-w-[60px] md:min-w-[70px]">Sa</span>
-                <p className="text-body-serif text-xs sm:text-base md:text-lg text-foreground font-medium pt-0.5 sm:pt-2">Sabita</p>
-              </div>
+            <div className="flex-1 grid grid-cols-[auto_1fr] items-start content-center gap-x-4 sm:gap-x-6 gap-y-3 sm:gap-y-6 relative">
+              <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold">Sa</span>
+              <p className="text-body-serif text-xs sm:text-base md:text-lg text-foreground font-medium pt-0.5 sm:pt-2">Sabita</p>
               
-              <div className="flex items-start gap-2 sm:gap-4 relative">
-                <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold min-w-[36px] sm:min-w-[60px] md:min-w-[70px]">Da</span>
-                <div className="flex items-center gap-2 pt-1.5 sm:pt-2">
-                  <p className="text-body-serif text-xs sm:text-base md:text-lg text-foreground font-medium">Deenabandhu</p>
-                  
+              <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold">Da</span>
+              <div className="flex items-center gap-2 pt-0.5 sm:pt-2">
+                <p className="text-body-serif text-xs sm:text-base md:text-lg text-foreground font-medium">Deenabandhu</p>
+                
+                <div 
+                  className="relative flex items-center justify-center cursor-help"
+                  onMouseEnter={() => setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                  onClick={() => setShowTooltip(!showTooltip)}
+                >
                   <div 
-                    className="relative flex items-center justify-center cursor-help"
-                    onMouseEnter={() => setShowTooltip(true)}
-                    onMouseLeave={() => setShowTooltip(false)}
-                    onClick={() => setShowTooltip(!showTooltip)}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
+                    style={{
+                      border: "1px solid hsl(43, 85%, 52%)",
+                      color: "hsl(43, 85%, 52%)",
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = "hsl(43, 85%, 52%)";
+                      e.currentTarget.style.color = "hsl(40, 33%, 96%)";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = "hsl(43, 85%, 52%)";
+                    }}
                   >
-                    <div 
-                      className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
-                      style={{
-                        border: "1px solid hsl(43, 85%, 52%)",
-                        color: "hsl(43, 85%, 52%)",
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.backgroundColor = "hsl(43, 85%, 52%)";
-                        e.currentTarget.style.color = "hsl(40, 33%, 96%)";
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                        e.currentTarget.style.color = "hsl(43, 85%, 52%)";
-                      }}
-                    >
-                      i
-                    </div>
-                    {/* Tooltip Content */}
-                    <div 
-                      className={`absolute bottom-full -right-16 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mb-3 w-56 sm:w-64 p-3 rounded-lg shadow-xl text-sm md:text-base transition-all duration-300 pointer-events-none z-10 ${showTooltip ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
-                      style={{
-                        background: "linear-gradient(135deg, hsl(345, 75%, 22%), hsl(345, 70%, 15%))",
-                        color: "hsl(40, 33%, 96%)",
-                        border: "1px solid hsla(43, 85%, 52%, 0.4)",
-                      }}
-                    >
-                      <p className="font-body tracking-wide leading-relaxed">
-                        Based on the modern Sanskrit first-consonant method: 
-                        <br/><span className="text-gold mt-1 block">Deenabandhu → "D" → "<b>Da</b>"</span>
-                      </p>
-                      {/* Triangle pointer */}
-                      <div className="absolute top-full right-20 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 border-8 border-transparent border-t-[hsl(345,70%,15%)]" />
-                    </div>
+                    i
+                  </div>
+                  {/* Tooltip Content */}
+                  <div 
+                    className={`absolute bottom-full -right-16 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 mb-3 w-56 sm:w-64 p-3 rounded-lg shadow-xl text-sm md:text-base transition-all duration-300 pointer-events-none z-10 ${showTooltip ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+                    style={{
+                      background: "linear-gradient(135deg, hsl(345, 75%, 22%), hsl(345, 70%, 15%))",
+                      color: "hsl(40, 33%, 96%)",
+                      border: "1px solid hsla(43, 85%, 52%, 0.4)",
+                    }}
+                  >
+                    <p className="font-body tracking-wide leading-relaxed">
+                      Based on the modern Sanskrit first-consonant method: 
+                      <br/><span className="text-gold mt-1 block">Deenabandhu → "D" → "<b>Da</b>"</span>
+                    </p>
+                    {/* Triangle pointer */}
+                    <div className="absolute top-full right-20 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 border-8 border-transparent border-t-[hsl(345,70%,15%)]" />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 sm:gap-4">
-                <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold min-w-[36px] sm:min-w-[60px] md:min-w-[70px]">Sri</span>
-                <p className="text-body-serif text-xs sm:text-base md:text-lg text-foreground font-medium pt-0.5 sm:pt-2">Srilata, Sripada & Sribatsa</p>
-              </div>
+              <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold">Sri</span>
+              <p className="text-body-serif text-xs sm:text-base md:text-lg text-foreground font-medium pt-0.5 sm:pt-2">Srilata, Sripada & Sribatsa</p>
               
-              <div className="flex items-start gap-3 sm:gap-4">
-                <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold min-w-[36px] sm:min-w-[60px] md:min-w-[70px]">Nilayam</span>
-                <p className="text-body-serif text-xs sm:text-base md:text-lg text-muted-foreground pt-0.5 sm:pt-2 italic">Their loving home</p>
-              </div>
+              <span className="text-script text-base sm:text-2xl md:text-3xl text-primary font-bold">Nilayam</span>
+              <p className="text-body-serif text-xs sm:text-base md:text-lg text-muted-foreground pt-0.5 sm:pt-2 italic">Their loving home</p>
             </div>
 
             <div className="mt-3 sm:mt-8 pt-3 sm:pt-6 border-t border-[hsla(43,85%,52%,0.3)] text-center">
