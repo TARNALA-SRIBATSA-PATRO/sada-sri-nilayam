@@ -67,19 +67,6 @@ const SecurityDetails = ({ guestName }: SecurityDetailsProps) => {
               </svg>
             </button>
 
-            {/* Shield icon */}
-            <div
-              className="mx-auto mb-6 w-16 h-16 rounded-full flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg, hsla(43, 85%, 52%, 0.15), hsla(345, 70%, 28%, 0.1))",
-                border: "1px solid hsla(43, 85%, 52%, 0.3)",
-              }}
-            >
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="hsl(var(--gold))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-            </div>
-
             <h2
               className="text-display text-xl sm:text-2xl font-bold mb-2"
               style={{ color: "hsl(var(--primary))" }}
@@ -137,7 +124,7 @@ const SecurityDetails = ({ guestName }: SecurityDetailsProps) => {
             <div className="section-divider my-5" />
 
             <p className="text-body-serif text-xs text-muted-foreground">
-              Please show this to the security guard at the gate
+              Kindly present this entry pass at the gate. If any further details are requested, please cooperate with the security personnel.
             </p>
           </div>
         </div>

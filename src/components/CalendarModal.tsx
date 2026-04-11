@@ -173,7 +173,7 @@ ${invitationUrl || "https://sadasrinilayam.com/"}
               Save the Date!
             </p>
             <p className="text-script" style={{ fontSize: isMobile ? "13px" : "12px", color: "hsl(43, 60%, 45%)", margin: 0 }}>
-              20th April 2026 · All Day
+              20th April 2026
             </p>
           </div>
         </div>

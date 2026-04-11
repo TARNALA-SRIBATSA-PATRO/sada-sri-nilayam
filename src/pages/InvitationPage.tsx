@@ -8,7 +8,7 @@ import CountdownTimer from "@/components/CountdownTimer";
 import VenueSection from "@/components/VenueSection";
 import PhotoGallery from "@/components/PhotoGallery";
 import FamilyMessage from "@/components/FamilyMessage";
-import ContactSection from "@/components/ContactSection";
+
 import MusicToggle from "@/components/MusicToggle";
 import CalendarModal from "@/components/CalendarModal";
 import SecurityDetails from "@/components/SecurityDetails";
@@ -79,7 +79,7 @@ const InvitationPage = () => {
       <FamilyMessage />
       <SecurityDetails guestName={guestName} />
       <HouseNameMeaning />
-      <ContactSection userName={guestName} adminContacts={admins} sentBy={inv?.sentBy} invitationUrl={window.location.href} />
+
       <MusicToggle />
 
       {showCalendar && (
