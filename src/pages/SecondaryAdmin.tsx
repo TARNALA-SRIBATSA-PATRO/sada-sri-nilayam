@@ -46,7 +46,6 @@ const SecondaryAdmin = () => {
   const [nickname, setNickname] = useState("");
   const [withFamily, setWithFamily] = useState(false);
   const [customMessage, setCustomMessage] = useState("");
-  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
   const [editInv, setEditInv] = useState<Invitation | null>(null);
@@ -109,15 +108,9 @@ const SecondaryAdmin = () => {
 
   const handleInvite = async () => {
     if (!personName.trim()) return;
-    const newInv = await addInvitation({ personName: personName.trim(), nickname: nickname.trim(), email: "", sentBy: admin?.name || "Admin", withFamily, customMessage: customMessage.trim(), isDeleted: false });
-    const link = getInviteUrl(newInv.id);
-    setGeneratedLink(link);
+    await addInvitation({ personName: personName.trim(), nickname: nickname.trim(), email: "", sentBy: admin?.name || "Admin", withFamily, customMessage: customMessage.trim(), isDeleted: false });
     reload();
     setPersonName(""); setNickname(""); setWithFamily(false); setCustomMessage("");
-  };
-
-  const copyLink = () => {
-    if (generatedLink) { navigator.clipboard.writeText(generatedLink); setCopied("link"); setTimeout(() => setCopied(null), 2000); }
   };
 
   const formatDate = (iso: string | null) => {
@@ -194,31 +187,6 @@ const SecondaryAdmin = () => {
           <button onClick={handleInvite} disabled={!personName.trim()} className="px-6 py-2.5 rounded-lg text-display font-semibold text-sm transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none" style={{ background: "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--maroon-deep)))", color: "hsl(var(--primary-foreground))", boxShadow: "0 4px 16px hsla(345, 70%, 28%, 0.25)" }}>
             Generate Invitation Link
           </button>
-
-          {generatedLink && (
-            <div className="mt-6 p-5 rounded-lg" style={{ background: "hsla(43, 85%, 52%, 0.06)", border: "1px solid hsla(43, 85%, 52%, 0.2)", animation: "fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}>
-              <p className="text-body-serif text-xs text-muted-foreground uppercase tracking-wider mb-1">Shareable Invitation Link</p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <code className="flex-1 text-sm px-3 py-2 rounded overflow-x-auto min-w-0" style={{ background: "hsl(var(--ivory-warm))", color: "hsl(var(--primary))" }}>{generatedLink}</code>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button onClick={copyLink} className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95" style={{ background: "hsl(var(--gold))", color: "hsl(var(--maroon-deep))" }}>
-                    {copied === "link" ? "Copied" : "Copy"}
-                  </button>
-                  <a href={generatedLink} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95 no-underline" style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
-                    Preview
-                  </a>
-                  <button onClick={async () => { 
-                    const invMock = { personName, nickname, email: "", sentBy: "", withFamily, customMessage, id: "", createdAt: "", lastOpenedAt: null, visitCount: 0, isDeleted: false };
-                    const text = generateShareText(invMock);
-                    const res = await shareContent("SADA SRI NILAYAM Invitation", text);
-                    if (res === "copied") { setCopied("link"); setTimeout(() => setCopied(null), 2000); }
-                  }} className="px-3 py-2 rounded-lg text-xs font-semibold text-display transition-all duration-200 hover:scale-105 active:scale-95" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>
-                    Share
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
         </section>
 
         {/* Invitations List */}
