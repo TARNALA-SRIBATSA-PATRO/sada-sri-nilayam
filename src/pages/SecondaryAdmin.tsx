@@ -48,8 +48,6 @@ const SecondaryAdmin = () => {
   const [customMessage, setCustomMessage] = useState("");
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const [previewName, setPreviewName] = useState("");
 
   const [editInv, setEditInv] = useState<Invitation | null>(null);
   const [editForm, setEditForm] = useState({ personName: "", nickname: "", email: "", withFamily: false, customMessage: "" });
@@ -120,16 +118,6 @@ const SecondaryAdmin = () => {
 
   const copyLink = () => {
     if (generatedLink) { navigator.clipboard.writeText(generatedLink); setCopied("link"); setTimeout(() => setCopied(null), 2000); }
-  };
-
-  const openPreview = () => {
-    if (!previewName.trim()) return;
-    const previewInv = invitations.find(i => i.personName.toLowerCase() === previewName.trim().toLowerCase());
-    if (previewInv) {
-      window.open(getInviteUrl(previewInv.id), "_blank");
-    } else {
-      alert("Invitation not found. Please create it first.");
-    }
   };
 
   const formatDate = (iso: string | null) => {
@@ -231,20 +219,6 @@ const SecondaryAdmin = () => {
               </div>
             </div>
           )}
-        </section>
-
-        {/* Preview Section */}
-        <section className="card-ornate p-6 sm:p-8">
-          <h2 className="text-display text-lg font-semibold mb-4" style={{ color: "hsl(var(--primary))" }}>Preview Invitation</h2>
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-end">
-            <div className="flex-1 w-full">
-              <label className="text-body-serif text-sm text-muted-foreground block mb-1.5">Guest Name for Preview</label>
-              <input type="text" value={previewName} onChange={(e) => setPreviewName(e.target.value)} placeholder="Enter name to preview" className="w-full px-4 py-2.5 rounded-lg text-body-serif text-foreground focus:outline-none focus:ring-2 focus:ring-secondary" style={inputStyle} />
-            </div>
-            <button onClick={openPreview} disabled={!previewName.trim()} className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-display font-semibold text-sm transition-all duration-300 hover:scale-[1.03] active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none shrink-0" style={{ background: "hsla(43, 85%, 52%, 0.15)", color: "hsl(var(--primary))", border: "1px solid hsla(43, 85%, 52%, 0.3)" }}>
-              Open Preview
-            </button>
-          </div>
         </section>
 
         {/* Invitations List */}
